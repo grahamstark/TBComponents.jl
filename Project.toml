@@ -1,0 +1,6 @@
+authors = ["Graham Stark <graham.stark@virtual-worlds.biz>"]
+name = "TBComponents"
+uuid = "1343baa2-cbbb-11e8-2158-5f964b697540"
+version = "0.1.0"
+
+[deps]
