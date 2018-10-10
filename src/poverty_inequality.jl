@@ -112,7 +112,7 @@ function makepoverty(
     pv[:foster_greer_thorndyke] = zeros( Float64, nfgs )
     pv[:time_to_exit] = 0.0
 
-    belowline = makeallbelowline( data )
+    belowline = makeallbelowline( data, line )
     nbrrows = size( belowline )[1]
 
     pv[:gini_amongst_poor] = makegini( belowline )

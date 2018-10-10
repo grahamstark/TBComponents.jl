@@ -72,5 +72,4 @@ end
     country_a_2_pov = TBComponents.makepoverty( country_a_2, line )
     country_b_pov = TBComponents.makepoverty( country_b, line )
     @test comparedics( country_a_pov, country_a_2_pov )
-
 end
