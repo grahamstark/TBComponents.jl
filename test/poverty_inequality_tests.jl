@@ -1,4 +1,4 @@
-using TBComponents
+import TBComponents
 using Test
 
 #
@@ -64,13 +64,13 @@ end
     # d should be a big version of a and also produce same result
     country_d = vcn( country_a, 50 )
     # attempt to blow things up with huge a clone
-    country_d = vcn( country_a, 1_000_000 )
+    # country_d = vcn( country_a, 1_000_000 )
 
     line = 125.0
 
-    country_a_pov = makepoverty( country_a, line )
-    country_a_2_pov = makepoverty( country_a_2, line )
-    country_b_pov = makepoverty( country_b, line )
+    country_a_pov = TBComponents.makepoverty( country_a, line )
+    country_a_2_pov = TBComponents.makepoverty( country_a_2, line )
+    country_b_pov = TBComponents.makepoverty( country_b, line )
     @test comparedics( country_a_pov, country_a_2_pov )
 
 end

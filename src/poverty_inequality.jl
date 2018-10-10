@@ -97,7 +97,7 @@ function makepoverty(
 
     data = makeaugmented( rawdata, weightpos, incomepos )
 
-    pv :: Dict{ Symbol, Any}()
+    pv = Dict{ Symbol, Any}()
     nrows = size( data )[1]
     ncols = size( data )[2]
     population = data[ nrows,POPN_ACCUM]
