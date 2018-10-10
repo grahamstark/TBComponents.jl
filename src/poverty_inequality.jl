@@ -93,15 +93,15 @@ function makepoverty(
     growth :: Float64 = 0.0,
     foster_greer_thorndyke_alphas :: Array{Float64} = DEFAULT_FGT_ALPHAS,
     weightpos :: Integer = 1,
-    incomepos :: Integer = 2 ) :: Dict{ Symbol, Any}
+    incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
 
     data = makeaugmented( rawdata, weightpos, incomepos )
 
     pv = Dict{ Symbol, Any}()
     nrows = size( data )[1]
     ncols = size( data )[2]
-    population = data[ nrows,POPN_ACCUM]
-    total_income = data[ nrows,INCOME_ACCUM]
+    population = data[ nrows,POPN_ACCUM ]
+    total_income = data[ nrows,INCOME_ACCUM ]
 
     nfgs = size( foster_greer_thorndyke_alphas )[1]
     @assert ncols == 5 "data should have 5 cols"
@@ -118,7 +118,7 @@ function makepoverty(
     pv[:gini_amongst_poor] = makegini( belowline )
     for row in 1:nbrrows
         inc = belowline[row,INCOME]
-        weight = weight
+        weight = belowline[row,WEIGHT]
         gap = line - inc
         @assert gap >= 0 "poverty gap must be postive"
         pv[:headcount] += weight
@@ -128,7 +128,7 @@ function makepoverty(
         end
         for p in 1:nfgs
             fg = foster_greer_thorndyke_alphas[p]
-            pv[:foster_greer_thorndyke[p]] += weight*((gap/line)^fg)
+            pv[:foster_greer_thorndyke][p] += weight*((gap/line)^fg)
         end
     end
     pv[:watts] /= population
@@ -137,9 +137,7 @@ function makepoverty(
     end
     pv[:gap] /= population
     pv[:headcount] /= population
-    for p in 1:npv
-        pv[:foster_greer_thorndyke[p]] /= population
-    end
+    pv[:foster_greer_thorndyke] ./= population
     #
     # Gini of poverty gaps; see: WB pp 74-5
     #

@@ -64,12 +64,19 @@ end
     # d should be a big version of a and also produce same result
     country_d = vcn( country_a, 50 )
     # attempt to blow things up with huge a clone
-    # country_d = vcn( country_a, 1_000_000 )
+    country_d = vcn( country_c, 1_000_000 )
 
     line = 125.0
 
     country_a_pov = TBComponents.makepoverty( country_a, line )
+    print("country A " );println( country_a_pov )
     country_a_2_pov = TBComponents.makepoverty( country_a_2, line )
     country_b_pov = TBComponents.makepoverty( country_b, line )
+    country_c_pov = TBComponents.makepoverty( country_c, line )
+    print("country C " );println( country_c_pov )
+    country_d_pov = TBComponents.makepoverty( country_d, line )
+    print("country D " );println( country_d_pov )
+
     @test comparedics( country_a_pov, country_a_2_pov )
+    @test comparedics( country_c_pov, country_d_pov )
 end
