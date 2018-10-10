@@ -6,6 +6,8 @@ const POPN_ACCUM      = 4
 const INCOME_ACCUM    = 5
 const DEFAULT_FGT_ALPHAS = [ 0.0, 0.50, 1.0, 1.50, 2.0, 2.5 ];
 
+
+
 "
 internal function that makes a sorted array
 with cumulative income and population added
@@ -153,7 +155,7 @@ function makepoverty(
     return pv
 end
 
-function binify(
+function binifydata(
     data :: Array{Float64},
     num_bins :: Int64 ) :: Array{Float64}
 
