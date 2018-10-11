@@ -61,16 +61,18 @@ are below the line. Probably possible in 1 line, once I get the hang of this
 a bit more.
 "
 function makeallbelowline( data :: Array{Float64}, line :: Float64 ) :: Array{Float64}
-    outa = Array{Float64}( undef, 0, 5 )
     nrows = size( data )[1]
     ncols = size( data )[2]
+    outa = zeros( Float64, nrows, ncols ) # Array{Float64}( undef, 0, 5 )
     @assert ncols == 5 "data should have 5 cols"
+    nout = 0
     for row in 1:nrows
         if data[row,INCOME] < line
-            outa = vcat( outa, data[row,:]' )
+            nout += 1
+            outa[ nout, : ] .= data[row,:]
         end
     end
-    return outa
+    return outa[1:nout,:]
 end
 
 "
