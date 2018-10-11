@@ -5,8 +5,8 @@ const WEIGHTED_INCOME = 3
 const POPN_ACCUM      = 4
 const INCOME_ACCUM    = 5
 const DEFAULT_FGT_ALPHAS = [ 0.0, 0.50, 1.0, 1.50, 2.0, 2.5 ];
-
-
+const DEFAULT_ATKINSON_ES = [ 0.25, 0.50, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0, 2.25 ];
+const DEFAULT_ENTROPIES = [ 1.25, 1.50, 1.75, 2.0, 2.25, 2.5 ];
 
 "
 internal function that makes a sorted array
@@ -151,9 +151,22 @@ function makepoverty(
     pv[:sen] = pv[:headcount]*pv[:gini_amongst_poor]+pv[:gap]*(1.0-pv[:gini_amongst_poor])
     pv[:shorrocks] = pv[:headcount]*pv[:gap]*(1.0-pv[:poverty_gap_gini])
     return pv
-end
+end # makepoverty
 
-function binifydata(
+"
+
+"
+function makeinequality(
+    rawdata :: Array{Float64},
+    atkinson_es :: Array{Float64} = DEFAULT_ATKINSON_ES,
+    generalised_entropy_alphas :: Array{Float64} = DEFAULT_ENTROPIES,
+    weightpos :: Integer = 1,
+    incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
+
+
+end # makeinequality
+
+function binify(
     data :: Array{Float64},
     num_bins :: Int64 ) :: Array{Float64}
 
