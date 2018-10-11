@@ -94,7 +94,7 @@ function makepoverty(
     foster_greer_thorndyke_alphas :: Array{Float64} = DEFAULT_FGT_ALPHAS,
     weightpos :: Integer = 1,
     incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
-
+    start_t = time_ns()
     data = makeaugmented( rawdata, weightpos, incomepos )
 
     pv = Dict{ Symbol, Any}()
@@ -114,10 +114,11 @@ function makepoverty(
 
     belowline = makeallbelowline( data, line )
     nbrrows = size( belowline )[1]
-    println( "initialised ")
+    initialised_t = time_ns()
 
     pv[:gini_amongst_poor] = makegini( belowline )
-    println( "gini created; main loop entered ")
+    main_start_t = time_ns()
+
     for row in 1:nbrrows
         inc :: Float64= belowline[row,INCOME]
         weight :: Float64 = belowline[row,WEIGHT]
@@ -133,7 +134,8 @@ function makepoverty(
             pv[:foster_greer_thorndyke][p] += weight*((gap/line)^fg)
         end
     end # main loop
-    print( "main loop exit")
+
+    main_end_t = time_ns()
     pv[:watts] /= population
     if growth > 0.0
         pv[:time_to_exit] = pv[:watts]/growth
@@ -144,7 +146,8 @@ function makepoverty(
     #
     # Gini of poverty gaps; see: WB pp 74-5
     #
-    println("sen/shorrocks start")
+    shorr_start_t = time_ns()
+
     gdata = copy( data ) ## check is changing data directly non-destructive?
     for row in 1:nrows
         gap = max( 0.0, line - gdata[row,INCOME] )
@@ -154,7 +157,23 @@ function makepoverty(
     pv[:poverty_gap_gini] = makegini( gdata )
     pv[:sen] = pv[:headcount]*pv[:gini_amongst_poor]+pv[:gap]*(1.0-pv[:gini_amongst_poor])
     pv[:shorrocks] = pv[:headcount]*pv[:gap]*(1.0-pv[:poverty_gap_gini])
-    println( "sen/shorrocks end")
+    shorr_end_t = time_ns()
+
+    elapsed = initialised_t - start_t
+    @printf "initialisation time %d ms\n" elapsed
+
+    elapsed = main_end_t - main_start_t
+    @printf "main loop time %d ms\n" elapsed
+
+    elapsed = shorr_start_t - main_end_t
+    @printf "finalised main calcs %d ms\n" elapsed
+
+    elapsed = shorr_end_t - shorr_start_t
+    @printf "shor/sen calcs %d ms\n" elapsed
+
+    elapsed = shorr_end_t - start_t
+    @printf "total elapsed %d ms\n" elapsed
+
     return pv
 end # makepoverty
 
