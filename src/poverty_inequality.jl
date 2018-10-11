@@ -158,11 +158,23 @@ end # makepoverty
 "
 function makeinequality(
     rawdata :: Array{Float64},
-    atkinson_es :: Array{Float64} = DEFAULT_ATKINSON_ES,
+    atkinson_es  :: Array{Float64} = DEFAULT_ATKINSON_ES,
     generalised_entropy_alphas :: Array{Float64} = DEFAULT_ENTROPIES,
     weightpos :: Integer = 1,
     incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
+    nats = size( atkinson_es )[1]
+    neps = size( generalised_entropy_alphas )[1]
+    iq = Dict{ Symbol, Any }()
+    # initialise atkinsons; 1 for e = 1 0 otherwise
+    iq[:atkinson_es] = atkinson_es
+    iq[:atkinson] = zeros( Float64, nats )
+    iq[:atkinson] = [i == 1.0 ? 1.0 : 0.0 for i in atkinson_es]
+    data = makeaugmented( rawdata, weightpos, incomepos )
+    iq[:generalised_entropy_alphas] = generalised_entropy_alphas
+    iq[:generalised_entropy] = zeros( Float64, neps )
+    iq[:gini] = makegini( data )
 
+    return iq
 
 end # makeinequality
 
