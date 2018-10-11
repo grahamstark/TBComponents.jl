@@ -16,7 +16,8 @@ with cumulative income and population added
 function makeaugmented(
     data      :: Array{Float64},
     weightpos :: Integer = 1,
-    incomepos :: Integer = 2 ) :: Array{Float64}
+    incomepos :: Integer = 2,
+    sortdata  :: Bool = true ) :: Array{Float64}
 
     nrows = size( data )[1]
     # print( nrows )
@@ -26,7 +27,9 @@ function makeaugmented(
             aug[row,INCOME] = data[row,incomepos]
             aug[row,WEIGHTED_INCOME] = data[row,incomepos]*data[row,weightpos]
     end
-    aug = sortslices( aug, dims=1,lt=((x,y)->isless(x[INCOME],y[INCOME])))
+    if sortdata
+        aug = sortslices( aug, alg=QuickSort, dims=1,lt=((x,y)->isless(x[INCOME],y[INCOME])))
+    end
     cumulative_weight :: Float64 = 0.0
     cumulative_income :: Float64 = 0.0
     for row in 1:nrows
@@ -150,14 +153,24 @@ function makepoverty(
     # Gini of poverty gaps; see: WB pp 74-5
     #
     shorr_start_t = time_ns()
-
-    gdata = copy( data ) ## check is changing data directly non-destructive?
+    # create a 'Gini of the Gaps'
+    # the sort routine in makeaugmented does a really
+    # bad job here either because the data
+    # is mostly zeros or because it's reverse sorted
+    # (smallest income -> biggest gap)
+    # we we can just create the dataset in reverse
+    # and use that
+    gdata = zeros( Float64, nrows, 5 )
     for row in 1:nrows
-        gap = max( 0.0, line - gdata[row,INCOME] )
-        gdata[row,INCOME] = gap
+        gap = max( 0.0, line - data[row,INCOME] )
+        gpos = nrows - row
+        gdata[gpos,INCOME] = gap;
+        gdata[gpos,WEIGHT] = data[row,WEIGHT]
     end
-    @time gdata = makeaugmented( gdata )
+    gdata = makeaugmented( gdata, 1, 2, false )
+    shorr_made_data = time_ns()
     pv[:poverty_gap_gini] = makegini( gdata )
+    
     pv[:sen] = pv[:headcount]*pv[:gini_amongst_poor]+pv[:gap]*(1.0-pv[:gini_amongst_poor])
     pv[:shorrocks] = pv[:headcount]*pv[:gap]*(1.0-pv[:poverty_gap_gini])
     shorr_end_t = time_ns()
@@ -171,7 +184,10 @@ function makepoverty(
     elapsed = Float64(shorr_start_t - main_end_t)/1_000_000_000.0
     @printf "finalised main calcs   %0.5f s\n" elapsed
 
-    elapsed = Float64(shorr_end_t - shorr_start_t)/1_000_000_000.0
+    elapsed = Float64(shorr_made_data - shorr_start_t)/1_000_000_000.0
+    @printf "shor/sen data creation    %0.5f s\n" elapsed
+
+    elapsed = Float64(shorr_end_t - shorr_made_data)/1_000_000_000.0
     @printf "shor/sen calcs        %0.5f s\n" elapsed
 
     elapsed = Float64(shorr_end_t - start_t)/1_000_000_000.0
