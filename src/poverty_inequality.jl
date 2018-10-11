@@ -160,20 +160,20 @@ function makepoverty(
     pv[:shorrocks] = pv[:headcount]*pv[:gap]*(1.0-pv[:poverty_gap_gini])
     shorr_end_t = time_ns()
 
-    elapsed = initialised_t - start_t
-    @printf "initialisation time %d ms\n" elapsed
+    elapsed = Float64(initialised_t - start_t)/1_000_000_000.0
+    @printf "initialisation time %0.5f s\n" elapsed
 
-    elapsed = main_end_t - main_start_t
-    @printf "main loop time %d ms\n" elapsed
+    elapsed = Float64(main_end_t - main_start_t)/1_000_000_000.0
+    @printf "main loop time %0.5f s\n" elapsed
 
-    elapsed = shorr_start_t - main_end_t
-    @printf "finalised main calcs %d ms\n" elapsed
+    elapsed = Float64(shorr_start_t - main_end_t)/1_000_000_000.0
+    @printf "finalised main calcs %0.5f s\n" elapsed
 
-    elapsed = shorr_end_t - shorr_start_t
-    @printf "shor/sen calcs %d ms\n" elapsed
+    elapsed = Float64(shorr_end_t - shorr_start_t)/1_000_000_000.0
+    @printf "shor/sen calcs %0.5f s\n" elapsed
 
-    elapsed = shorr_end_t - start_t
-    @printf "total elapsed %d ms\n" elapsed
+    elapsed = Float64(shorr_end_t - start_t)/1_000_000_000.0
+    @printf "total elapsed %0.5f ms\n" elapsed
 
     return pv
 end # makepoverty
