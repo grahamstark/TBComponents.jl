@@ -298,9 +298,9 @@ function binify(
     for row in 1:nrows loop
         if out[POPN_ACCUM] >= thresh then
             bno += 1
-            thresh += bin_size
             out[bno,1] = data[i,POPN_ACCUM]
             out[bno,2] = data[i,INCOME_ACCUM]
+            thresh += bin_size
         end
     end
     return out
