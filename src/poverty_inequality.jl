@@ -91,7 +91,7 @@ positions assumed to be 1 and 2 unless weight and incomepos are supplied
 * `foster_greer_thorndyke_alphas` - coefficients for FGT poverty measures; note that FGT(0)
 corresponds to headcount and FGT(1) to gap; count and gap are computed directly anyway
 but it's worth checking one against the other.
-* `growth` is (e.g.) 1.01 for 1% per period, and is used for 'time to exit' measure.
+* `growth` is (e.g.) 0.01 for 1% per period, and is used for 'time to exit' measure.
 "
 function makepoverty(
     rawdata :: Array{Float64},
@@ -163,16 +163,16 @@ function makepoverty(
     gdata = zeros( Float64, nrows, 5 )
     for row in 1:nrows
         gap = max( 0.0, line - data[row,INCOME] )
-        gpos = nrows - row
+        gpos = nrows - row + 1
         gdata[gpos,INCOME] = gap;
         gdata[gpos,WEIGHT] = data[row,WEIGHT]
     end
     gdata = makeaugmented( gdata, 1, 2, false )
     shorr_made_data = time_ns()
     pv[:poverty_gap_gini] = makegini( gdata )
-    
+
     pv[:sen] = pv[:headcount]*pv[:gini_amongst_poor]+pv[:gap]*(1.0-pv[:gini_amongst_poor])
-    pv[:shorrocks] = pv[:headcount]*pv[:gap]*(1.0-pv[:poverty_gap_gini])
+    pv[:shorrocks] = pv[:headcount]*pv[:gap]*(1.0+pv[:poverty_gap_gini])
     shorr_end_t = time_ns()
 
     elapsed = Float64(initialised_t - start_t)/1_000_000_000.0

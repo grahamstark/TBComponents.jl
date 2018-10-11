@@ -88,6 +88,20 @@ end
     @test country_b_pov[:headcount] ≈ 0.5
     @test country_b_pov[:gap] ≈ 1.0/250.0
     @test country_c_pov[:watts] ≈ 0.0877442307
+    # some of these are hand-calculations, for from Ada version
+    @test country_c_pos[:gap][ 1 ] ≈ 0.080000;
+    @test country_c_pos[:foster_greer_thorndyke][ 1 ] ≈ 0.5000000; # pov level
+    @test country_c_pos[:foster_greer_thorndyke][ 2 ] ≈ 0.1984059;
+    @test country_c_pos[:foster_greer_thorndyke][ 3 ] ≈ 0.0800000;
+    @test country_c_pos[:foster_greer_thorndyke][ 4 ] ≈ 0.0327530;
+    @test country_c_pos[:foster_greer_thorndyke][ 5 ] ≈ 0.0136000;
+    @test country_c_pos[:foster_greer_thorndyke][ 6 ] ≈ 0.0057192;
+    @test country_c_pos[:sen ] ≈ 0.0900000;
+    @test country_c_pos[:shorrocks ] ≈ 0.0625000;
+    @test country_c_pos[:watts ] ≈ 0.0877442;
+    @test country_c_pos[:time_to_exit ] ≈ 1.7548846;
+    @test country_c_pos[:gini_amongst_poor ] ≈ 0.0238095;
+    @test country_c_pos[:poverty_gap_gini ] ≈ 0.5625000;
 
 end # poverty testset
 
