@@ -106,8 +106,8 @@ function makepoverty(
     pv = Dict{ Symbol, Any}()
     nrows = size( data )[1]
     ncols = size( data )[2]
-    population = data[ nrows,POPN_ACCUM ]
-    total_income = data[ nrows,INCOME_ACCUM ]
+    population = data[ nrows, POPN_ACCUM ]
+    total_income = data[ nrows, INCOME_ACCUM ]
 
     nfgs = size( foster_greer_thorndyke_alphas )[1]
     @assert ncols == 5 "data should have 5 cols"
@@ -197,7 +197,14 @@ function makepoverty(
 end # makepoverty
 
 "
+Make a dictionary of inequality measures.
+This is mainly taken from chs 5 and 6 of the World Bank book.
 
+1. `rawdata` a matrix with cols with weights and incomes
+2. `atkinson_es` inequality aversion values for the Atkinson indexes
+3. `generalised_entropy_alphas`
+4. `weightpos` - column with weights
+5. `incomepos` - column with incomes
 "
 function makeinequality(
     rawdata :: Array{Float64},
@@ -271,8 +278,30 @@ function makeinequality(
     return iq
 end # makeinequality
 
-function binify(
-    data :: Array{Float64},
-    num_bins :: Int64 ) :: Array{Float64}
+"
 
+"
+function binify(
+    rawdata :: Array{Float64},
+    num_bins :: Int64,
+    weightpos :: Integer = 1,
+    incomepos :: Integer = 2 ) :: Array{Float64}
+    data = makeaugmented( rawdata, weightpos, incomepos )
+    nrows = size( data )[1]
+    ncols = size( data )[2]
+    out = zeros( Float64, numbins, 2 )
+    population = data[ nrows, POPN_ACCUM ]
+    total_income = data[ nrows, INCOME_ACCUM ]
+    bin_size :: Float64 = population/ncols
+    bno = 1
+    thresh = bin_size
+    for row in 1:nrows loop
+        if out[POPN_ACCUM] >= thresh then
+            bno += 1
+            thresh += bin_size
+            out[bno,1] = data[i,POPN_ACCUM]
+            out[bno,2] = data[i,INCOME_ACCUM]
+        end
+    end
+    return out
 end
