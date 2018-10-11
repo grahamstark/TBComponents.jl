@@ -161,19 +161,19 @@ function makepoverty(
     shorr_end_t = time_ns()
 
     elapsed = Float64(initialised_t - start_t)/1_000_000_000.0
-    @printf "initialisation time %0.5f s\n" elapsed
+    @printf "initialisation time      %0.5f s\n" elapsed
 
     elapsed = Float64(main_end_t - main_start_t)/1_000_000_000.0
-    @printf "main loop time %0.5f s\n" elapsed
+    @printf "main loop time          %0.5f s\n" elapsed
 
     elapsed = Float64(shorr_start_t - main_end_t)/1_000_000_000.0
-    @printf "finalised main calcs %0.5f s\n" elapsed
+    @printf "finalised main calcs   %0.5f s\n" elapsed
 
     elapsed = Float64(shorr_end_t - shorr_start_t)/1_000_000_000.0
-    @printf "shor/sen calcs %0.5f s\n" elapsed
+    @printf "shor/sen calcs        %0.5f s\n" elapsed
 
     elapsed = Float64(shorr_end_t - start_t)/1_000_000_000.0
-    @printf "total elapsed %0.5f ms\n" elapsed
+    @printf "total elapsed        %0.5f s\n" elapsed
 
     return pv
 end # makepoverty
