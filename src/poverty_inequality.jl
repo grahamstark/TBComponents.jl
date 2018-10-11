@@ -279,7 +279,10 @@ function makeinequality(
 end # makeinequality
 
 "
-
+Chop a dataset with populations and incomes
+into numbins groups in a form suitable for
+e.g. a Gini curve col1 is cumulative population and 2 cumulative
+income/whatever
 "
 function binify(
     rawdata   :: Array{Float64},
