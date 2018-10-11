@@ -269,7 +269,6 @@ function makeinequality(
     end
     iq[:theil] ./= total_population
     return iq
-
 end # makeinequality
 
 function binify(

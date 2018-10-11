@@ -136,7 +136,24 @@ end # poverty testset
     @test comparedics( iq1, iq3 )
     @test comparedics( iq1, iq4 )
     @test comparedics( iq1, iq64k )
-
+    @test iq1[:gini ] ≈ 0.3272727;
+    @test iq1[:theil][1] ≈ 0.1792203;
+    @test iq1[:theil][2] ≈  0.1830644;
+    @test iq1[:generalised_entropy][ 1 ] ≈ 0.1883288;
+    @test iq1[:generalised_entropy][ 2 ] ≈ 0.1954897;
+    @test iq1[:generalised_entropy][ 3 ] ≈ 0.2047211;
+    @test iq1[:generalised_entropy][ 4 ] ≈ 0.2162534;
+    @test iq1[:generalised_entropy][ 5 ] ≈ 0.2303812;
+    @test iq1[:generalised_entropy][ 6 ] ≈ 0.2474728;
+    @test iq1[:atkinson][ 1 ] ≈ 0.0446396;
+    @test iq1[:atkinson][ 2 ] ≈ 0.0869155;
+    @test iq1[:atkinson][ 3 ] ≈ 0.1267328;
+    @test iq1[:atkinson][ 4 ] ≈ 0.1640783;
+    @test iq1[:atkinson][ 5 ] ≈ 0.1989991;
+    @test iq1[:atkinson][ 6 ] ≈ 0.2315817;
+    @test iq1[:atkinson][ 7 ] ≈ 0.2619332;
+    @test iq1[:atkinson][ 8 ] ≈ 0.2901688;
+    @test iq1[:atkinson][ 9 ] ≈ 0.3164032;
+    @test iq1[:hoover ≈ 0.2363636;
     print( iq1 )
-
 end # inequality testset
