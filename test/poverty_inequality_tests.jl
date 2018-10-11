@@ -15,10 +15,16 @@ primitive type Amount <: AbstractFloat 64 end
 This just creates an array which is `times` vcat copies of `a`
 "
 function vcn( a :: Array{Float64}, times :: Int64 )
-    n = size( a )[2]
-    out = zeros( 0, n )
-    for i in 1:times
-        out = vcat( a, out )
+    nrows = size( a )[1]
+    ncols = size( a )[2]
+    newrows = nrows*times
+    out = zeros( Float64, newrows, ncols )
+    p = 0
+    for row in 1:nrows
+        for i in 1:times
+            p += 1
+            out[p,:] .= a[row,:]
+        end
     end
     out
 end

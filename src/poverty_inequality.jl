@@ -162,6 +162,8 @@ function makeinequality(
     generalised_entropy_alphas :: Array{Float64} = DEFAULT_ENTROPIES,
     weightpos :: Integer = 1,
     incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
+    data = makeaugmented( rawdata, weightpos, incomepos )
+    nrows = size( data )[1]
     nats = size( atkinson_es )[1]
     neps = size( generalised_entropy_alphas )[1]
     iq = Dict{ Symbol, Any }()
@@ -169,11 +171,60 @@ function makeinequality(
     iq[:atkinson_es] = atkinson_es
     iq[:atkinson] = zeros( Float64, nats )
     iq[:atkinson] = [i == 1.0 ? 1.0 : 0.0 for i in atkinson_es]
-    data = makeaugmented( rawdata, weightpos, incomepos )
     iq[:generalised_entropy_alphas] = generalised_entropy_alphas
     iq[:generalised_entropy] = zeros( Float64, neps )
+    iq[:negative_or_zero_income_flag] = 0
+    iq[:hoover] = 0.0
+    iq[:theil] = zeros(Float64,2)
     iq[:gini] = makegini( data )
 
+    total_income = data[nrows,INCOME_ACCUM]
+    total_population = data[nrows,POPN_ACCUM]
+    y_bar = total_income/total_population
+    for row in 1:nrows
+        income = data[row,INCOME]
+        weight = data[row,WEIGHT]
+        if income > 0.0
+            y_yb  :: Float64 = income/y_bar
+            yb_y  :: Float64 = ybar/income
+            ln_y_yb :: Float64 = log( y_yb )
+            ln_yb_y :: Float64 = log( yb_y )
+            iq[:hoover] += weight*abs( income - y_bar )
+            iq[:theil][1] += weight*ln_yb_y
+            iq[:theil][2] += weight*y_tb*ln_y_tb
+            for i in 1:nats
+                    e :: Float64 = iq[:atkinson_es][i]
+                    if e != 1.0
+                        iq[:atkinson][i] += (weight*y_yb)^(1.0-e)
+                    else
+                        iq[:atkinson][i] *= (income)^(weight/total_population)
+                    end # e = 1 case
+            end # atkinsons
+            for i in 1:neps
+                alpha :: Float64 = iq[:generalised_entropy_alphas][i]
+                iq[:generalised_entropy][i] += weight*(y_yb^alpha)
+            end # entropies
+
+        else
+            iq[:negative_or_zero_income_flag] += 1
+        end # positive income
+    end # main loop
+    iq[:hoover] /= 2.0*total_income
+    for i in 1:neps
+        alpha :: Float64 = iq[:generalised_entropy_alphas][i]
+        aq :: Float64 = (1.0/(alpha*(alpha-1.0)))
+        iq[:generalised_entropy][i] =
+            aq*((iq[:generalised_entropy][i]/total_population)-1.0)
+    end # entropies
+    for i in 1:nats
+        e :: Float64 = iq[:atkinson_es][i]
+        if e != 1.0
+            iq[:atkinson][i] = 1.0 - ( iq[:atkinson]/total_population )^(1.0/(1.0-e))
+        else
+            iq[:atkinson][i] = 1.0 - ( iq[:atkinson]/y_bar )
+        end # e = 1
+    end
+    iq[:theil] ./= total_population
     return iq
 
 end # makeinequality
