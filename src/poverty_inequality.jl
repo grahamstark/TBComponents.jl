@@ -94,9 +94,9 @@ but it's worth checking one against the other.
 * `growth` is (e.g.) 0.01 for 1% per period, and is used for 'time to exit' measure.
 "
 function makepoverty(
-    rawdata :: Array{Float64},
-    line :: Float64,
-    growth :: Float64 = 0.0,
+    rawdata                       :: Array{Float64},
+    line                          :: Float64,
+    growth                        :: Float64 = 0.0,
     foster_greer_thorndyke_alphas :: Array{Float64} = DEFAULT_FGT_ALPHAS,
     weightpos :: Integer = 1,
     incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
@@ -207,10 +207,10 @@ This is mainly taken from chs 5 and 6 of the World Bank book.
 5. `incomepos` - column with incomes
 "
 function makeinequality(
-    rawdata :: Array{Float64},
-    atkinson_es  :: Array{Float64} = DEFAULT_ATKINSON_ES,
+    rawdata                    :: Array{Float64},
+    atkinson_es                :: Array{Float64} = DEFAULT_ATKINSON_ES,
     generalised_entropy_alphas :: Array{Float64} = DEFAULT_ENTROPIES,
-    weightpos :: Integer = 1,
+    weightpos                  :: Integer = 1,
     incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
     data = makeaugmented( rawdata, weightpos, incomepos )
     nrows = size( data )[1]
@@ -282,8 +282,8 @@ end # makeinequality
 
 "
 function binify(
-    rawdata :: Array{Float64},
-    num_bins :: Int64,
+    rawdata   :: Array{Float64},
+    num_bins  :: Int64,
     weightpos :: Integer = 1,
     incomepos :: Integer = 2 ) :: Array{Float64}
     data = makeaugmented( rawdata, weightpos, incomepos )
