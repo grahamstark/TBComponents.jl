@@ -283,7 +283,7 @@ end # makeinequality
 "
 function binify(
     rawdata   :: Array{Float64},
-    num_bins  :: Int64,
+    numbins   :: Int64,
     weightpos :: Integer = 1,
     incomepos :: Integer = 2 ) :: Array{Float64}
     data = makeaugmented( rawdata, weightpos, incomepos )
@@ -292,14 +292,14 @@ function binify(
     out = zeros( Float64, numbins, 2 )
     population = data[ nrows, POPN_ACCUM ]
     total_income = data[ nrows, INCOME_ACCUM ]
-    bin_size :: Float64 = population/ncols
-    bno = 1
+    bin_size :: Float64 = population/numbins
+    bno = 0
     thresh = bin_size
-    for row in 1:nrows loop
-        if out[POPN_ACCUM] >= thresh then
+    for row in 1:nrows
+        if data[row,POPN_ACCUM] >= thresh
             bno += 1
-            out[bno,1] = data[i,POPN_ACCUM]
-            out[bno,2] = data[i,INCOME_ACCUM]
+            out[bno,1] = data[row,POPN_ACCUM]
+            out[bno,2] = data[row,INCOME_ACCUM]
             thresh += bin_size
         end
     end
