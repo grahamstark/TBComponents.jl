@@ -1,3 +1,4 @@
+using Printf
 
 const WEIGHT          = 1
 const INCOME          = 2
