@@ -229,12 +229,12 @@ function makeinequality(
         weight = data[row,WEIGHT]
         if income > 0.0
             y_yb  :: Float64 = income/y_bar
-            yb_y  :: Float64 = ybar/income
+            yb_y  :: Float64 = y_bar/income
             ln_y_yb :: Float64 = log( y_yb )
             ln_yb_y :: Float64 = log( yb_y )
             iq[:hoover] += weight*abs( income - y_bar )
             iq[:theil][1] += weight*ln_yb_y
-            iq[:theil][2] += weight*y_tb*ln_y_tb
+            iq[:theil][2] += weight*y_yb*ln_y_yb
             for i in 1:nats
                     e :: Float64 = iq[:atkinson_es][i]
                     if e != 1.0
