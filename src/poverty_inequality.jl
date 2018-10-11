@@ -216,7 +216,7 @@ function makeinequality(
     iq[:atkinson] = [i == 1.0 ? 1.0 : 0.0 for i in atkinson_es]
     iq[:generalised_entropy_alphas] = generalised_entropy_alphas
     iq[:generalised_entropy] = zeros( Float64, neps )
-    iq[:negative_or_zero_income_flag] = 0
+    iq[:negative_or_zero_income_count] = 0
     iq[:hoover] = 0.0
     iq[:theil] = zeros(Float64,2)
     iq[:gini] = makegini( data )
@@ -249,7 +249,7 @@ function makeinequality(
             end # entropies
 
         else
-            iq[:negative_or_zero_income_flag] += 1
+            iq[:negative_or_zero_income_count] += 1
         end # positive income
     end # main loop
     iq[:hoover] /= 2.0*total_income
@@ -262,9 +262,9 @@ function makeinequality(
     for i in 1:nats
         e :: Float64 = iq[:atkinson_es][i]
         if e != 1.0
-            iq[:atkinson][i] = 1.0 - ( iq[:atkinson]/total_population )^(1.0/(1.0-e))
+            iq[:atkinson][i] = 1.0 - ( iq[:atkinson][i]/total_population )^(1.0/(1.0-e))
         else
-            iq[:atkinson][i] = 1.0 - ( iq[:atkinson]/y_bar )
+            iq[:atkinson][i] = 1.0 - ( iq[:atkinson][i]/y_bar )
         end # e = 1
     end
     iq[:theil] ./= total_population
