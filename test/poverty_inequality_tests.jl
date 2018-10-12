@@ -11,6 +11,8 @@ using Test
 # ...
 primitive type Amount <: AbstractFloat 64 end
 
+const  TOL = 0.00001; # for nearly equal
+
 "
 This just creates an array which is `times` vcat copies of `a`
 "
@@ -70,15 +72,16 @@ end
     country_d = vcn( country_c, 100_000 )
 
     line = 125.0
+    growth = 0.05
 
-    country_a_pov = TBComponents.makepoverty( country_a, line )
+    country_a_pov = TBComponents.makepoverty( country_a, line, growth )
     print("country A " );println( country_a_pov )
-    country_a_2_pov = TBComponents.makepoverty( country_a_2, line )
-    country_b_pov = TBComponents.makepoverty( country_b, line )
-    country_c_pov = TBComponents.makepoverty( country_c, line )
+    country_a_2_pov = TBComponents.makepoverty( country_a_2, line, growth )
+    country_b_pov = TBComponents.makepoverty( country_b, line, growth )
+    country_c_pov = TBComponents.makepoverty( country_c, line, growth )
     print("country C " );println( country_c_pov )
-    # country_d_pov = TBComponents.makepoverty( country_d, line )
-    # print("country D " );println( country_d_pov )
+    country_d_pov = TBComponents.makepoverty( country_d, line, growth )
+    print("country D " );println( country_d_pov )
 
     @test comparedics( country_a_pov, country_a_2_pov )
     # @test comparedics( country_c_pov, country_d_pov )
@@ -89,19 +92,19 @@ end
     @test country_b_pov[:gap] ≈ 1.0/250.0
     @test country_c_pov[:watts] ≈ 0.0877442307
     # some of these are hand-calculations, for from Ada version
-    @test country_c_pos[:gap] ≈ 0.080000;
-    @test country_c_pos[:foster_greer_thorndyke][ 1 ] ≈ 0.5000000; # pov level
-    @test country_c_pos[:foster_greer_thorndyke][ 2 ] ≈ 0.1984059;
-    @test country_c_pos[:foster_greer_thorndyke][ 3 ] ≈ 0.0800000;
-    @test country_c_pos[:foster_greer_thorndyke][ 4 ] ≈ 0.0327530;
-    @test country_c_pos[:foster_greer_thorndyke][ 5 ] ≈ 0.0136000;
-    @test country_c_pos[:foster_greer_thorndyke][ 6 ] ≈ 0.0057192;
-    @test country_c_pos[:sen ] ≈ 0.0900000;
-    @test country_c_pos[:shorrocks ] ≈ 0.0625000;
-    @test country_c_pos[:watts ] ≈ 0.0877442;
-    @test country_c_pos[:time_to_exit ] ≈ 1.7548846;
-    @test country_c_pos[:gini_amongst_poor ] ≈ 0.0238095;
-    @test country_c_pos[:poverty_gap_gini ] ≈ 0.5625000;
+    @test isapprox( country_c_pov[:gap], 0.080000, atol = TOL )
+    @test isapprox( country_c_pov[:foster_greer_thorndyke][ 1 ], 0.5000000, atol = TOL ) # pov level
+    @test isapprox( country_c_pov[:foster_greer_thorndyke][ 2 ], 0.1984059, atol = TOL )
+    @test isapprox( country_c_pov[:foster_greer_thorndyke][ 3 ], 0.0800000, atol = TOL )
+    @test isapprox( country_c_pov[:foster_greer_thorndyke][ 4 ], 0.0327530, atol = TOL )
+    @test isapprox( country_c_pov[:foster_greer_thorndyke][ 5 ], 0.0136000, atol = TOL )
+    @test isapprox( country_c_pov[:foster_greer_thorndyke][ 6 ], 0.0057192, atol = TOL )
+    @test isapprox( country_c_pov[:sen ], 0.0900000, atol = TOL )
+    @test isapprox( country_c_pov[:shorrocks ], 0.0625000, atol = TOL )
+    @test isapprox( country_c_pov[:watts ], 0.0877442, atol = TOL )
+    @test isapprox( country_c_pov[:time_to_exit ], 1.7548846, atol = TOL )
+    @test isapprox( country_c_pov[:gini_amongst_poor ], 0.0238095, atol = TOL )
+    @test isapprox( country_c_pov[:poverty_gap_gini ], 0.5625000, atol = TOL )
 
 end # poverty testset
 
@@ -133,27 +136,32 @@ end # poverty testset
     iq64k = makeinequality( c64k )
     # weighting and multiplying should make no difference
     @test comparedics( iq1, iq2 )
+    println( "iq1");println( iq1 )
+    println( "iq2");println( iq2 )
+    println( "iq3");println( iq3 )
+    println( "iq64k");println( iq64k )
+
     @test comparedics( iq1, iq3 )
     @test comparedics( iq1, iq4 )
     @test comparedics( iq1, iq64k )
-    @test iq1[:gini ] ≈ 0.3272727;
-    @test iq1[:theil][1] ≈ 0.1792203;
-    @test iq1[:theil][2] ≈  0.1830644;
-    @test iq1[:generalised_entropy][ 1 ] ≈ 0.1883288;
-    @test iq1[:generalised_entropy][ 2 ] ≈ 0.1954897;
-    @test iq1[:generalised_entropy][ 3 ] ≈ 0.2047211;
-    @test iq1[:generalised_entropy][ 4 ] ≈ 0.2162534;
-    @test iq1[:generalised_entropy][ 5 ] ≈ 0.2303812;
-    @test iq1[:generalised_entropy][ 6 ] ≈ 0.2474728;
-    @test iq1[:atkinson][ 1 ] ≈ 0.0446396;
-    @test iq1[:atkinson][ 2 ] ≈ 0.0869155;
-    @test iq1[:atkinson][ 3 ] ≈ 0.1267328;
-    @test iq1[:atkinson][ 4 ] ≈ 0.1640783;
-    @test iq1[:atkinson][ 5 ] ≈ 0.1989991;
-    @test iq1[:atkinson][ 6 ] ≈ 0.2315817;
-    @test iq1[:atkinson][ 7 ] ≈ 0.2619332;
-    @test iq1[:atkinson][ 8 ] ≈ 0.2901688;
-    @test iq1[:atkinson][ 9 ] ≈ 0.3164032;
-    @test iq1[:hoover ≈ 0.2363636;
+    @test isapprox( iq1[:gini ], 0.3272727, atol = TOL )
+    @test isapprox( iq1[:theil][1], 0.1792203, atol = TOL )
+    @test isapprox( iq1[:theil][2],  0.1830644, atol = TOL )
+    @test isapprox( iq1[:generalised_entropy][ 1 ], 0.1883288, atol = TOL )
+    @test isapprox( iq1[:generalised_entropy][ 2 ], 0.1954897, atol = TOL )
+    @test isapprox( iq1[:generalised_entropy][ 3 ], 0.2047211, atol = TOL )
+    @test isapprox( iq1[:generalised_entropy][ 4 ], 0.2162534, atol = TOL )
+    @test isapprox( iq1[:generalised_entropy][ 5 ], 0.2303812, atol = TOL )
+    @test isapprox( iq1[:generalised_entropy][ 6 ], 0.2474728, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 1 ], 0.0446396, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 2 ], 0.0869155, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 3 ], 0.1267328, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 4 ], 0.1640783, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 5 ], 0.1989991, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 6 ], 0.2315817, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 7 ], 0.2619332, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 8 ], 0.2901688, atol = TOL )
+    @test isapprox( iq1[:atkinson][ 9 ], 0.3164032, atol = TOL )
+    @test isapprox( iq1[:hoover], 0.2363636, atol = TOL )
     print( iq1 )
 end # inequality testset

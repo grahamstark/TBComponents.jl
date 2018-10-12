@@ -53,7 +53,7 @@ function makegini( data :: Array{Float64} ) :: Float64
     end
     lastr = data[nrows,:]
     for row in 1:nrows
-        lorenz += data[WEIGHT]*(2.0*data[row,INCOME_ACCUM] - data[row,WEIGHTED_INCOME])
+        lorenz += data[row, WEIGHT]*((2.0*data[row,INCOME_ACCUM]) - data[row,WEIGHTED_INCOME])
     end
     return 1.0-(lorenz/lastr[INCOME_ACCUM])/lastr[POPN_ACCUM]
 end
@@ -243,9 +243,9 @@ function makeinequality(
             iq[:theil][1] += weight*ln_yb_y
             iq[:theil][2] += weight*y_yb*ln_y_yb
             for i in 1:nats
-                    e :: Float64 = iq[:atkinson_es][i]
-                    if e != 1.0
-                        iq[:atkinson][i] += (weight*y_yb)^(1.0-e)
+                    es :: Float64 = iq[:atkinson_es][i]
+                    if es != 1.0
+                        iq[:atkinson][i] += weight*(y_yb^(1.0-es))
                     else
                         iq[:atkinson][i] *= (income)^(weight/total_population)
                     end # e = 1 case
@@ -267,9 +267,9 @@ function makeinequality(
             aq*((iq[:generalised_entropy][i]/total_population)-1.0)
     end # entropies
     for i in 1:nats
-        e :: Float64 = iq[:atkinson_es][i]
-        if e != 1.0
-            iq[:atkinson][i] = 1.0 - ( iq[:atkinson][i]/total_population )^(1.0/(1.0-e))
+        es :: Float64 = iq[:atkinson_es][i]
+        if es != 1.0
+            iq[:atkinson][i] = 1.0 - ( iq[:atkinson][i]/total_population )^(1.0/(1.0-es))
         else
             iq[:atkinson][i] = 1.0 - ( iq[:atkinson][i]/y_bar )
         end # e = 1
