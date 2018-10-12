@@ -301,7 +301,7 @@ function binify(
     for row in 1:nrows
         if data[row,POPN_ACCUM] >= thresh
             bno += 1
-            out[bno,1] = data[row,POPN_ACCUM]/total_population
+            out[bno,1] = data[row,POPN_ACCUM]/population
             out[bno,2] = data[row,INCOME_ACCUM]/total_income
             thresh += bin_size
         end
