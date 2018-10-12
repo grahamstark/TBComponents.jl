@@ -95,8 +95,8 @@ but it's worth checking one against the other.
 "
 function makepoverty(
     rawdata                       :: AbstractArray{<:Real},
-    line                          :: <:Real,
-    growth                        :: <:Real = 0.0,
+    line                          :: Real,
+    growth                        :: Real = 0.0,
     foster_greer_thorndyke_alphas :: AbstractArray{<:Real} = DEFAULT_FGT_ALPHAS,
     weightpos                     :: Integer = 1,
     incomepos                     :: Integer = 2 ) :: Dict{ Symbol, Any }
