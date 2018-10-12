@@ -80,15 +80,15 @@ end
     line = 125.0
     growth = 0.05
 
-    country_a_pov = TBComponents.makepoverty( country_a, line, growth )
+    country_a_pov = makepoverty( country_a, line, growth )
     print("country A " );println( country_a_pov )
-    country_a_2_pov = TBComponents.makepoverty( country_a_2, line, growth )
-    country_b_pov = TBComponents.makepoverty( country_b, line, growth )
-    country_c_pov = TBComponents.makepoverty( country_c, line, growth )
+    country_a_2_pov = makepoverty( country_a_2, line, growth )
+    country_b_pov = makepoverty( country_b, line, growth )
+    country_c_pov = makepoverty( country_c, line, growth )
     print("country C " );println( country_c_pov )
-    country_d_pov = TBComponents.makepoverty( country_d, line, growth )
+    country_d_pov = makepoverty( country_d, line, growth )
     print("country D " );println( country_d_pov )
-    country_e_pov = TBComponents.makepoverty( country_e, line, growth )
+    country_e_pov = makepoverty( country_e, line, growth )
     print("country E " );println( country_e_pov )
 
     @test comparedics( country_a_pov, country_a_2_pov )
