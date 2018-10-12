@@ -89,7 +89,7 @@ end
     @test country_b_pov[:gap] ≈ 1.0/250.0
     @test country_c_pov[:watts] ≈ 0.0877442307
     # some of these are hand-calculations, for from Ada version
-    @test country_c_pos[:gap][ 1 ] ≈ 0.080000;
+    @test country_c_pos[:gap] ≈ 0.080000;
     @test country_c_pos[:foster_greer_thorndyke][ 1 ] ≈ 0.5000000; # pov level
     @test country_c_pos[:foster_greer_thorndyke][ 2 ] ≈ 0.1984059;
     @test country_c_pos[:foster_greer_thorndyke][ 3 ] ≈ 0.0800000;
