@@ -14,7 +14,7 @@ internal function that makes a sorted array
 with cumulative income and population added
 "
 function makeaugmented(
-    data      :: Array{Float64},
+    data      :: AbstractArray{<:Real},
     weightpos :: Integer = 1,
     incomepos :: Integer = 2,
     sortdata  :: Bool = true ) :: Array{Float64}
@@ -94,12 +94,12 @@ but it's worth checking one against the other.
 * `growth` is (e.g.) 0.01 for 1% per period, and is used for 'time to exit' measure.
 "
 function makepoverty(
-    rawdata                       :: Array{Float64},
-    line                          :: Float64,
-    growth                        :: Float64 = 0.0,
-    foster_greer_thorndyke_alphas :: Array{Float64} = DEFAULT_FGT_ALPHAS,
-    weightpos :: Integer = 1,
-    incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
+    rawdata                       :: AbstractArray{<:Real},
+    line                          :: <:Real,
+    growth                        :: <:Real = 0.0,
+    foster_greer_thorndyke_alphas :: AbstractArray{<:Real} = DEFAULT_FGT_ALPHAS,
+    weightpos                     :: Integer = 1,
+    incomepos                     :: Integer = 2 ) :: Dict{ Symbol, Any }
     start_t = time_ns()
     data = makeaugmented( rawdata, weightpos, incomepos )
 
@@ -207,9 +207,9 @@ This is mainly taken from chs 5 and 6 of the World Bank book.
 5. `incomepos` - column with incomes
 "
 function makeinequality(
-    rawdata                    :: Array{Float64},
-    atkinson_es                :: Array{Float64} = DEFAULT_ATKINSON_ES,
-    generalised_entropy_alphas :: Array{Float64} = DEFAULT_ENTROPIES,
+    rawdata                    :: AbstractArray{<:Real},
+    atkinson_es                :: AbstractArray{<:Real} = DEFAULT_ATKINSON_ES,
+    generalised_entropy_alphas :: AbstractArray{<:Real} = DEFAULT_ENTROPIES,
     weightpos                  :: Integer = 1,
     incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
     data = makeaugmented( rawdata, weightpos, incomepos )
@@ -285,10 +285,10 @@ e.g. a Gini curve col1 is cumulative population and 2 cumulative
 income/whatever
 "
 function binify(
-    rawdata   :: Array{Float64},
-    numbins   :: Int64,
+    rawdata   :: AbstractArray{<:Real},
+    numbins   :: Integer,
     weightpos :: Integer = 1,
-    incomepos :: Integer = 2 ) :: Array{Float64}
+    incomepos :: Integer = 2 ) :: AbstractArray{<:Real}
     data = makeaugmented( rawdata, weightpos, incomepos )
     nrows = size( data )[1]
     ncols = size( data )[2]
@@ -301,8 +301,8 @@ function binify(
     for row in 1:nrows
         if data[row,POPN_ACCUM] >= thresh
             bno += 1
-            out[bno,1] = data[row,POPN_ACCUM]
-            out[bno,2] = data[row,INCOME_ACCUM]
+            out[bno,1] = data[row,POPN_ACCUM]/total_population
+            out[bno,2] = data[row,INCOME_ACCUM]/total_income
             thresh += bin_size
         end
     end
