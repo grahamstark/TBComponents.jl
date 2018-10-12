@@ -71,6 +71,12 @@ end
     # attempt to blow things up with huge a clone
     country_d = vcn( country_c, 100_000 )
 
+    # very unbalanced copy of dataset 1 with 10,000 weight1 1:2 and 2 weight 10,000 7:10
+    country_e = vcn( country_a[1:2,:], 10_000 )
+    cx = copy(country_a[3:4,:])
+    cx[:,1] .= 10_000
+    country_e = vcat( country_e, cx )
+
     line = 125.0
     growth = 0.05
 
@@ -82,8 +88,11 @@ end
     print("country C " );println( country_c_pov )
     country_d_pov = TBComponents.makepoverty( country_d, line, growth )
     print("country D " );println( country_d_pov )
+    country_e_pov = TBComponents.makepoverty( country_e, line, growth )
+    print("country E " );println( country_e_pov )
 
     @test comparedics( country_a_pov, country_a_2_pov )
+    @test comparedics( country_a_pov, country_e_pov )
     # @test comparedics( country_c_pov, country_d_pov )
 
     # numbers from WP ch. 4
