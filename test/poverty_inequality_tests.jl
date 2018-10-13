@@ -69,11 +69,11 @@ end
     # d should be a big version of a and also produce same result
     country_d = vcn( country_a, 50 )
     # attempt to blow things up with huge a clone
-    country_d = vcn( country_c, 100_000 )
+    country_d = vcn( country_c, 1_000_000 )
 
     # very unbalanced copy of dataset 1 with 10,000 weight1 1:2 and 2 weight 10,000 7:10
-    country_e = vcn( country_a[1:2,:], 10_000 )
-    cx = copy(country_a[3:4,:])
+    country_e = vcn( country_c[1:2,:], 10_000 )
+    cx = copy(country_c[3:4,:])
     cx[:,1] .= 10_000
     country_e = vcat( country_e, cx )
 
@@ -92,7 +92,7 @@ end
     print("country E " );println( country_e_pov )
 
     @test comparedics( country_a_pov, country_a_2_pov )
-    @test comparedics( country_a_pov, country_e_pov )
+    @test comparedics( country_c_pov, country_e_pov )
     # @test comparedics( country_c_pov, country_d_pov )
 
     # numbers from WP ch. 4
@@ -133,10 +133,10 @@ end # poverty testset
     c3[:,1] .= 10_000.0
     c4 = copy( c1 )
     c4[:,1] .= 2.0
-    # very unbalanced copy of dataset 1 with 10,000 weight1 1:6 and 4 weight 10,000 7:10
-    c64k = vcn( c1[1:6,:], 10_000 )
+    # very unbalanced copy of dataset 1 with 100,000 weight1 1:6 and 4 weight 100,000 7:10
+    c64k = vcn( c1[1:6,:], 100_000 )
     cx = copy(c1[7:10,:])
-    cx[:,1] .= 10_000
+    cx[:,1] .= 100_000
     c64k = vcat( c64k, cx )
     iq1 = makeinequality( c1 )
     iq2 = makeinequality( c2 )
