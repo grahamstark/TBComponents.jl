@@ -13,10 +13,10 @@ internal function that makes a sorted array
 with cumulative income and population added
 "
 function makeaugmented(
-    data      :: AbstractArray{<:Real},
+    data      :: AbstractArray{<:Real,2},
     weightpos :: Integer = 1,
     incomepos :: Integer = 2,
-    sortdata  :: Bool = true ) :: Array{Float64}
+    sortdata  :: Bool = true ) :: Array{Float64,2}
 
     nrows = size( data )[1]
     # print( nrows )
@@ -43,7 +43,7 @@ end
 "
 calculate a Gini coefficient on one of our sorted arrays
 "
-function makegini( data :: Array{Float64} ) :: Float64
+function makegini( data :: Array{Float64, 2} ) :: Float64
     lorenz :: Float64 = 0.0
 
     nrows = size( data )[1]
