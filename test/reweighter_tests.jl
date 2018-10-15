@@ -90,12 +90,18 @@ ncols = size( data )[2]
 
    tp = wchi' * data
 
-   print( tp )
+   print( "chi_square"); print( wchi )
+
+   print( "cs weighted" );print( tp )
 
    @test tp' ≈ target_populations
 
    rw = doreweighting( data, initial_weights, target_populations, chi_square, 0.0, 0.0 )
 
    print( rw )
+
+   tp2 = rw[:weights]' * data
+   @test tp2' ≈ target_populations
+
 
 end # creedy testset

@@ -67,26 +67,39 @@ function doreweighting(
     end # nested function
 
 
-
-    function lamdas!( out_lamdas, in_lamdas )
+    function fj!( out_lamdas , out_hessian, in_lamdas )
         lamdas = in_lamdas;
         print( "in lamdas" );println( in_lamdas )
         computelamdasandhessian();
         print( "out lamdas "); println( lamdas )
-        f_lamdas = lamdas;
+        out_lamdas = lamdas;
+        out_hessian = hessian;
     end
 
-    function hessian!( f_hessian, in_lamdas )
-        f_hessian = hessian;
+
+    function f!( out_lamdas , in_lamdas )
+        # lamdas = in_lamdas;
+        # print( "in lamdas" );println( in_lamdas )
+        # computelamdasandhessian();
+        # print( "out lamdas "); println( lamdas )
+        # out_lamdas = lamdas;
     end
 
-    rc = nlsolve( lamdas!, hessian!, lamdas )
+    function j!( f_hessian, in_lamdas )
+        # lamdas = in_lamdas
+        # computelamdasandhessian();
+        # f_hessian = hessian;
+    end
+
+    df = OnceDifferentiable( f!, j!, fj!, lamdas, hessian )
+    rc = nlsolve( df, lamdas )
 
     new_weights = copy(initial_weights)
-    if converged(rc)
+    converge = converged( rc )
+    if converge
         for r in 1:nrows
-            row = data[row,:]
-            u = row'*lamdas[1]
+            row = data[r,:]
+            u = (row'*lamdas)[1]
             g_m1 = 0.0
             if functiontype == chi_square
                 g_m1 = 1.0 + u;
@@ -112,7 +125,7 @@ function doreweighting(
             new_weights[r] = initial_weights[r]*g_m1
         end
     end # converged
-    return Dict(:lamdas=>lamdas, :hessian=>hessian, :rc => rc )
+    return Dict(:lamdas=>lamdas, :hessian=>hessian, :rc => rc, :weights=>new_weights, :converged => converge )
 end # do reweighting
 
 
