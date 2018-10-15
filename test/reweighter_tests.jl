@@ -4,9 +4,7 @@ using Test
 #
 #
 
-@testset "Reproduce the basic test case in Creedy NEW ZEALAND TREASURY WORKING PAPER 03/17" begin
-
-target_populations = [ 50.0 20.0 230.0 35.0 ]
+target_populations = [ 50.0, 20.0, 230.0, 35.0 ]
 
 data = [
  1.0 1.0 0.0 0.0 ;
@@ -74,16 +72,30 @@ actual_final_weights = [
    4.967,
    2.109 ]
 
-   nrows = size( data )[1]
-   ncols = size( data )[2]
-   @test ncols == size( target_populations )[2]
+nrows = size( data )[1]
+ncols = size( data )[2]
+
+
+@testset "Reproduce the basic test case in Creedy NEW ZEALAND TREASURY WORKING PAPER 03/17" begin
+
+   @test ncols == size( target_populations )[1]
    @test nrows == size( initial_weights )[1]
 
-   a = target_populations - (initial_weights'*data)
-   print( a )
+   print( target_populations )
 
-   print( actual_final_weights' * initial_weights )
+   # a = target_populations - (data'*initial_weights)
+   # print( a )
 
-   @test actual_final_weights != initial_weights
+   wchi = dochisquarereweighting( data, initial_weights, target_populations )
+
+   tp = wchi' * data
+
+   print( tp )
+
+   @test tp' ≈ target_populations
+
+   rw = doreweighting( data, initial_weights, target_populations, chi_square, 0.0, 0.0 )
+
+   print( rw )
 
 end # creedy testset

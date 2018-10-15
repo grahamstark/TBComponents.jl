@@ -4,27 +4,27 @@
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
 
 
-function doreweighting()
-    data             :: AbstractArray{ <:Real, 2 },
-    initial_weights  :: AbstractArray{ <:Real, 1 }, # a column
+function doreweighting(
+    data               :: AbstractArray{ <:Real, 2 },
+    initial_weights    :: AbstractArray{ <:Real, 1 }, # a column
     target_populations :: AbstractArray{ <:Real, 1 }, # a row
-    functiontype     :: DistanceFunctionType,
-    ru               :: Real = 0.0,
-    rl               :: Real = 0.0 ) :: Dict{ Symbol, Any }
+    functiontype       :: DistanceFunctionType,
+    ru                 :: Real = 0.0,
+    rl                 :: Real = 0.0 ) :: Dict{ Symbol, Any }
     nrows = size( data )[1]
     ncols = size( data )[2]
-    @assert ncols == size( target_populations )[2]
+    @assert ncols == size( target_populations )[1]
     @assert nrows == size( initial_weights )[1]
-    a = target_populations - ( initial_weights'*data)
+    a = target_populations - (initial_weights'*data)'
     hessian = zeros( Float64, ncols, ncols )
-    lambdas = zeros( Float64, ncols )
+    lamdas = zeros( Float64, ncols, 1 )
 
-    function lamdasandhessian()
-        z = zeros( Float64, ncols )
+    function computelamdasandhessian()
+        z = zeros( Float64, ncols, 1 )
         hessian[:,:] .= 0.0
         for row in 1:nrows
             rv = data[row,:]
-            u = rv * lamdas'
+            u = (rv' * lamdas)[1]
             d_g_m1 = 0.0
             g_m1 = 0.0
             if functiontype == chi_square
@@ -45,8 +45,8 @@ function doreweighting()
                g_m1 = ( 1.0 -  u/2.0 ) ^ ( -2 )
                d_g_m1 = ( 1.0 - u/2.0 ) ^ ( -3 )
             elseif functiontype == d_and_s_type_b
-               g_m1 = ( 1.0- u ) ** (-1 )
-               d_g_m1 = ( 1.0 - u ) ** ( -2 )
+               g_m1 = ( 1.0- u ) ^ (-1 )
+               d_g_m1 = ( 1.0 - u ) ^ ( -2 )
             elseif functiontype == d_and_s_constrained
                alpha = ( ru - rl ) / (( 1.0 - rl )*( ru - 1.0 ))
                g_m1 = rl*(ru-1.0)+ru*(1.0-rl)*exp( alpha*u )/((ru-1.0)+(1.0-rl)*(exp( alpha*u )))
@@ -58,24 +58,89 @@ function doreweighting()
                z[col] += initial_weights[row]*data[row,col]*(g_m1-1.0)
                ## the hessian
                for c2 in 1:ncols
-                   zz : Float64 = initial_weights[row]*data[row,col]*data[row,c2]
+                   zz :: Float64 = initial_weights[row]*data[row,col]*data[row,c2]
                    hessian[col,c2] += zz*d_g_m1
                end
            end
         end # obs loop
-
-        lambdas = a - z
+        lamdas = a - z
     end # nested function
 
 
 
-
-
-
-    function dochisquarereweighting()
-
+    function lamdas!( out_lamdas, in_lamdas )
+        lamdas = in_lamdas;
+        print( "in lamdas" );println( in_lamdas )
+        computelamdasandhessian();
+        print( "out lamdas "); println( lamdas )
+        f_lamdas = lamdas;
     end
 
+    function hessian!( f_hessian, in_lamdas )
+        f_hessian = hessian;
+    end
 
+    rc = nlsolve( lamdas!, hessian!, lamdas )
 
+    new_weights = copy(initial_weights)
+    if converged(rc)
+        for r in 1:nrows
+            row = data[row,:]
+            u = row'*lamdas[1]
+            g_m1 = 0.0
+            if functiontype == chi_square
+                g_m1 = 1.0 + u;
+            elseif functiontype == constrained_chi_square
+                if( u < ( rl - 1.0 ))
+                   g_m1 = rl
+                elsif( u > ( ru - 1.0 ))
+                   g_m1 = ru
+                else
+                   g_m1 = 1.0 + u
+                end
+            elseif functiontype == d_and_s_type_a
+               g_m1 = ( 1.0 -  u/2.0 ) ^ ( -2 )
+            elseif functiontype == d_and_s_type_b
+               g_m1 = ( 1.0- u ) ^ (-1 )
+            elseif functiontype == d_and_s_constrained
+               alpha = ( ru - rl ) / (( 1.0 - rl )*( ru - 1.0 ))
+               g_m1 = rl*(ru-1.0)+ru*(1.0-rl)*exp( alpha*u )/((ru-1.0)+(1.0-rl)*(exp( alpha*u )))
+           end # function cases
+            #
+            # Creedy wp 03/17 table 3
+            #
+            new_weights[r] = initial_weights[r]*g_m1
+        end
+    end # converged
+    return Dict(:lamdas=>lamdas, :hessian=>hessian, :rc => rc )
 end # do reweighting
+
+
+
+function dochisquarereweighting(
+    data               :: AbstractArray{ <:Real, 2 },
+    initial_weights    :: AbstractArray{ <:Real, 1 }, # a row
+    target_populations :: AbstractArray{ <:Real, 1 } ) :: Array{ <:Real }
+
+    nrows = size( data )[1]
+    ncols = size( data )[2]
+
+    row = zeros( ncols )
+    populations = zeros( ncols, 1 )
+    lamdas  = zeros( ncols, 1 )
+    weights = zeros( nrows, 1 )
+    m = zeros( ncols, ncols )
+    for r in 1:nrows
+        row = data[r,:]
+        m += initial_weights[r]*(row*row')
+        for c in 1:ncols
+            populations[c] += (row[c]*initial_weights[r])'
+        end
+    end
+    lamdas = (m^-1)*(target_populations-populations)
+    for r in 1:nrows
+        row = data[r,:]
+        weights[r] = initial_weights[r]*(1.0 + (row'*lamdas)[1])
+    end
+    return weights;
+end
