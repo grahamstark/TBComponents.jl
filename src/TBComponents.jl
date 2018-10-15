@@ -4,6 +4,7 @@
 module TBComponents
 
 using NLsolve
+using Optim
 using Printf
 
 export makegini, makepoverty, makeinequality, binify
