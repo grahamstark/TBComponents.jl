@@ -13,10 +13,10 @@ internal function that makes a sorted array
 with cumulative income and population added
 "
 function makeaugmented(
-    data      :: AbstractArray{<:Real},
+    data      :: AbstractArray{<:Real,2},
     weightpos :: Integer = 1,
     incomepos :: Integer = 2,
-    sortdata  :: Bool = true ) :: Array{Float64}
+    sortdata  :: Bool = true ) :: Array{Float64,2}
 
     nrows = size( data )[1]
     # print( nrows )
@@ -43,7 +43,7 @@ end
 "
 calculate a Gini coefficient on one of our sorted arrays
 "
-function makegini( data :: Array{Float64} ) :: Float64
+function makegini( data :: Array{Float64, 2} ) :: Float64
     lorenz :: Float64 = 0.0
 
     nrows = size( data )[1]
@@ -62,7 +62,7 @@ generate a subset of one of our datasets with just the elements whose incomes
 are below the line. Probably possible in 1 line, once I get the hang of this
 a bit more.
 "
-function makeallbelowline( data :: Array{Float64}, line :: Float64 ) :: Array{Float64}
+function makeallbelowline( data :: Array{Float64, 2 }, line :: Float64 ) :: Array{Float64, 2 }
     nrows = size( data )[1]
     ncols = size( data )[2]
     outa = zeros( Float64, nrows, ncols ) # Array{Float64}( undef, 0, 5 )
@@ -93,10 +93,10 @@ but it's worth checking one against the other.
 * `growth` is (e.g.) 0.01 for 1% per period, and is used for 'time to exit' measure.
 "
 function makepoverty(
-    rawdata                       :: AbstractArray{<:Real},
+    rawdata                       :: AbstractArray{<:Real, 2},
     line                          :: Real,
     growth                        :: Real = 0.0,
-    foster_greer_thorndyke_alphas :: AbstractArray{<:Real} = DEFAULT_FGT_ALPHAS,
+    foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,
     weightpos                     :: Integer = 1,
     incomepos                     :: Integer = 2 ) :: Dict{ Symbol, Any }
     start_t = time_ns()
@@ -206,9 +206,9 @@ This is mainly taken from chs 5 and 6 of the World Bank book.
 5. `incomepos` - column with incomes
 "
 function makeinequality(
-    rawdata                    :: AbstractArray{<:Real},
-    atkinson_es                :: AbstractArray{<:Real} = DEFAULT_ATKINSON_ES,
-    generalised_entropy_alphas :: AbstractArray{<:Real} = DEFAULT_ENTROPIES,
+    rawdata                    :: AbstractArray{<:Real, 2},
+    atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
+    generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES,
     weightpos                  :: Integer = 1,
     incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
     data = makeaugmented( rawdata, weightpos, incomepos )
@@ -284,10 +284,10 @@ e.g. a Gini curve col1 is cumulative population and 2 cumulative
 income/whatever
 "
 function binify(
-    rawdata   :: AbstractArray{<:Real},
+    rawdata   :: AbstractArray{<:Real, 2},
     numbins   :: Integer,
     weightpos :: Integer = 1,
-    incomepos :: Integer = 2 ) :: AbstractArray{<:Real}
+    incomepos :: Integer = 2 ) :: AbstractArray{<:Real, 1}
     data = makeaugmented( rawdata, weightpos, incomepos )
     nrows = size( data )[1]
     ncols = size( data )[2]

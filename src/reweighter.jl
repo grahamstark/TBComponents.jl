@@ -4,9 +4,15 @@
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
 
 
+<<<<<<< HEAD
 function doreweighting(
     data             :: AbstractArray{ <:Real },
     initial_weights  :: AbstractArray{ <:Real },
+=======
+function doreweighting()
+    data             :: AbstractArray{ <:Real, 2 },
+    initial_weights  :: AbstractArray{ <:Real, 1 },
+>>>>>>> f5d41024b3653f98e68390b2f94f87cc6e137585
     functiontype     :: DistanceFunctionType,
     ru               :: Real = 0.0,
     rl               :: Real = 0.0 ) :: Dict{ Symbol, Any }
