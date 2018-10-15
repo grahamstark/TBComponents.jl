@@ -16,10 +16,9 @@ function doreweighting(
     @assert ncols == size( target_populations )[1]
     @assert nrows == size( initial_weights )[1]
     a = target_populations - (initial_weights'*data)'
-    hessian = zeros( Float64, ncols, ncols )
-    lamdas = zeros( Float64, ncols, 1 )
 
-    function computelamdasandhessian()
+    function computelamdasandhessian( lamdas::Array{Float64,2} )
+        hessian = zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
         hessian[:,:] .= 0.0
         for row in 1:nrows
@@ -63,36 +62,18 @@ function doreweighting(
                end
            end
         end # obs loop
-        lamdas = a - z
+        f_lamdas = a - z
+        (f_lamdas, hessian )
     end # nested function
 
 
-    function fj!( out_lamdas , out_hessian, in_lamdas )
-        lamdas = in_lamdas;
-        print( "in lamdas" );println( in_lamdas )
-        computelamdasandhessian();
+    function fj!( f_lamdas , hessian, lamdas )
+        (f_lamdas, hessian ) = computelamdasandhessian( lamdas );
         print( "out lamdas "); println( lamdas )
-        out_lamdas = lamdas;
-        out_hessian = hessian;
     end
 
-
-    function f!( out_lamdas , in_lamdas )
-        # lamdas = in_lamdas;
-        # print( "in lamdas" );println( in_lamdas )
-        # computelamdasandhessian();
-        # print( "out lamdas "); println( lamdas )
-        # out_lamdas = lamdas;
-    end
-
-    function j!( f_hessian, in_lamdas )
-        # lamdas = in_lamdas
-        # computelamdasandhessian();
-        # f_hessian = hessian;
-    end
-
-    df = OnceDifferentiable( f!, j!, fj!, lamdas, hessian )
-    rc = nlsolve( df, lamdas )
+    lamdas = zeros( Float64, ncols, 1 )
+    rc = nlsolve( only_fj!( fj! ), lamdas )
 
     new_weights = copy(initial_weights)
     converge = converged( rc )
