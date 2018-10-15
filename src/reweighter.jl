@@ -5,8 +5,8 @@
 
 
 function doreweighting()
-    data             :: AbstractArray{ <:Real },
-    initial_weights  :: AbstractArray{ <:Real },
+    data             :: AbstractArray{ <:Real, 2 },
+    initial_weights  :: AbstractArray{ <:Real, 1 },
     functiontype     :: DistanceFunctionType,
     ru               :: Real = 0.0,
     rl               :: Real = 0.0 ) :: Dict{ Symbol, Any }
