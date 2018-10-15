@@ -4,7 +4,7 @@
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
 
 
-function doreweighting()
+function doreweighting(
     data             :: AbstractArray{ <:Real },
     initial_weights  :: AbstractArray{ <:Real },
     functiontype     :: DistanceFunctionType,
@@ -20,8 +20,13 @@ function doreweighting()
         hessian[:,:] .= 0.0
         for row in 1:nrows
             rv = data[row,:]
-            u = rv * lamdas
-
+            u = rv * lamdas'
+            d_g_m1 = 0.0
+            g_m1 = 0.0
+            if functiontype == chi_square
+                d_g_m1 = 1.0;
+                g_m1 = 1.0 + u;
+            end
 
         end
     end # nested function
