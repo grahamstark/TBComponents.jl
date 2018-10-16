@@ -90,7 +90,6 @@ ncols = size( data )[2]
    weighted_popn_chi = (wchi' * data)'
    @test weighted_popn_chi ≈ target_populations
 
-   df :: DistanceFunctionType = chi_square
    for method in [
       chi_square,
       d_and_s_type_a,
