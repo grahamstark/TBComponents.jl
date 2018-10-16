@@ -80,7 +80,7 @@ ncols = size( data )[2]
    @test ncols == size( target_populations )[1]
    @test nrows == size( initial_weights )[1]
 
-   print( target_populations )
+   println( "target popns $target_populations" )
 
    # a = target_populations - (data'*initial_weights)
    # print( a )

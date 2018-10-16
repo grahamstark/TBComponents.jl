@@ -1,5 +1,7 @@
 "
-
+   Implements the weighting procedures from:
+   Creedy 2003 http://www.treasury.govt.nz/publications/research-policy/wp/2003/03-17/twp03-17.pdf
+   Jean-Claude Deville and Carl-Erik Sarndal http://www.jstor.org/stable/2290268
 "
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
 
@@ -58,15 +60,39 @@ function solve_non_linear_equation_system(
     return Dict( :x=>lx, :iterations=>iterations, :error=>error )
 end
 
+"
+Make a weights vector which weights the matrix `data`
+so when summed the col totals sum to `target_populations`
+See the Creedy Paper for `function_type`
+If using one of the constrained types,
+the output weights should be no more than ru*the initial weight,
+no less than rl
+Returns a Dict with :=>weights and some extra info on convergence.
+data : KxJ matrix where k is num observations and J is num constraints;
+see:
+Microdata Adjustment by the Minimum Information Loss Principle Joachim Merz; FFB Discussion Paper No. 10 July 1994
+for a good discussion on how to lay out the dataset
+
+intial_weights, new_weights : K length vector
+target_populations - J length vector;
+
+tolx, tolf, max_iterations : see Solve_Non_Linear_Equation_System in the parent
+ru/rl max/min acceptable values of ratio of final_weight/initial_weight (for constrained distance functions)
+
+note: chi-square is just there for checking purposes; use Do_Basic_Reweighting if that's all you need.
 
 
+"
 function doreweighting(
     data               :: AbstractArray{ <:Real, 2 },
     initial_weights    :: AbstractArray{ <:Real, 1 }, # a column
     target_populations :: AbstractArray{ <:Real, 1 }, # a row
     functiontype       :: DistanceFunctionType,
     ru                 :: Real = 0.0,
-    rl                 :: Real = 0.0 ) :: Dict{ Symbol, Any }
+    rl                 :: Real = 0.0,
+    tolx               :: Real = 0.000001,
+    tolf               :: Real = 0.000001 ) :: Dict{ Symbol, Any }
+
     nrows = size( data )[1]
     ncols = size( data )[2]
     @assert ncols == size( target_populations )[1]
@@ -82,9 +108,7 @@ function doreweighting(
     ##
     function local_solve_non_linear_equation_system(
         thefunc,
-        numtrials :: Integer = 50,
-        tolx      :: Real = 0.000001,
-        tolf      :: Real = 0.000001 ) :: Dict{Symbol,Any}
+        numtrials :: Integer = 50 ) :: Dict{Symbol,Any}
 
         deltas = zeros( ncols )
         error = 0
@@ -94,7 +118,6 @@ function doreweighting(
             errf = 0.0
             errx = 0.0
             outx :: Dict{Symbol, Any} = thefunc()
-
             gradient = outx[:gradient]
             hessian = outx[:hessian]
             for i in 1:ncols
@@ -103,7 +126,6 @@ function doreweighting(
             if errf <= tolf
                  break
             end
-            # # deltas = solve( hessian, gradient )
             deltas = hessian \ gradient
             lamdas += deltas
             for i in 1:ncols
@@ -120,8 +142,6 @@ function doreweighting(
     end
 
     function compute_lamdas_and_hessian()  :: Dict{ Symbol, Any }
-        #print( "ncols $ncols")
-        #print( "lamdas $lamdas" )
         gradient = zeros( Float64, ncols, 1 )
         hessian = zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
@@ -129,9 +149,6 @@ function doreweighting(
         for row in 1:nrows
             rv = data[row,:]
             u = (rv' * lamdas)[1]
-            # println( "rv = $rv ")
-            # println( "lamdas = $lamdas ")
-            # println( "u = $u")
             d_g_m1 = 0.0
             g_m1 = 0.0
             if functiontype == chi_square
@@ -162,7 +179,6 @@ function doreweighting(
                   (( ru - 1.0 ) + (( 1.0 - rl ) * exp( alpha*u ))))
            end # function cases
            for col in 1:ncols
-               # println( "g_m1 $g_m1 initial_weights[row]=$initial_weights[row] data[row,col]=$data[row,col]")
                z[col] += initial_weights[row]*data[row,col]*(g_m1-1.0)
                ## the hessian
                for c2 in 1:ncols
@@ -171,21 +187,16 @@ function doreweighting(
                end
            end
         end # obs loop
-        #println( "A" );println( a )
-        #println( "Z" );println( z )
         gradient = a - z
-        #println( "Gradient $gradient")
         d = Dict(:lamdas=>lamdas,:gradient=>gradient,:hessian=>hessian )
-        #println( "returning")
         return d
     end # nested function
 
-    #println( "compute_lamdas_and_hessian = $compute_lamdas_and_hessian" )
-    #println( "lamdas = $lamdas" )
-    #println( typeof( lamdas ))
-
     rc = local_solve_non_linear_equation_system(
         compute_lamdas_and_hessian )
+    # fixme: my failed attempt to use Optim code.
+    # this has to be better once I get the hang of it.
+    # =================================================
     # print( rc )
     # lamdas = zeros( Float64, ncols )
     # df = TwiceDifferentiable( getLamdas, getGradients!, getHessian!, lamdas )
@@ -238,7 +249,13 @@ function doreweighting(
 end # do reweighting
 
 
-
+"
+This is a route-1 approach to Chi-square reweighting.
+The iterative main method should produce identical results
+when method=chi_square. This is kept here mainly for testing.
+Note the weights can be negative.
+See the Creedy Papers.
+"
 function dochisquarereweighting(
     data               :: AbstractArray{ <:Real, 2 },
     initial_weights    :: AbstractArray{ <:Real, 1 }, # a row
