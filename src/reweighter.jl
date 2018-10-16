@@ -1,7 +1,8 @@
 "
-   Implements the weighting procedures from:
-   Creedy 2003 http://www.treasury.govt.nz/publications/research-policy/wp/2003/03-17/twp03-17.pdf
-   Jean-Claude Deville and Carl-Erik Sarndal http://www.jstor.org/stable/2290268
+   Implements the micro data weighting procedures from:
+   * Creedy 2003 http://www.treasury.govt.nz/publications/research-policy/wp/2003/03-17/twp03-17.pdf
+   * Creedy 2003  http://www.business.curtin.edu.au/files/creedy2.pdf
+   * Jean-Claude Deville and Carl-Erik Sarndal http://www.jstor.org/stable/2290268
 "
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
 
@@ -194,6 +195,7 @@ function doreweighting(
 
     rc = local_solve_non_linear_equation_system(
         compute_lamdas_and_hessian )
+
     # fixme: my failed attempt to use Optim code.
     # this has to be better once I get the hang of it.
     # =================================================
@@ -211,11 +213,12 @@ function doreweighting(
     #         getHessian!,
     #         lamdas,
     #         Newton() )
-
     # rc = optimize( only_fj!( fj! ), lamdas )
+    # converge = converged( rc )
+    # ==============================================
 
     new_weights = copy(initial_weights)
-    # converge = converged( rc )
+    # construct the new weights from the lamdas
     if rc[:error] == 0
         for r in 1:nrows
             row = data[r,:]
@@ -283,12 +286,3 @@ function dochisquarereweighting(
     end
     return weights;
 end
-
-
-# function getGradients!( out_gradient :: Vector, lamdas::Vector )
-#     out_gradient = gradient
-# end
-#
-# function getHessian!( out_hessian::Matrix, lamdas::Vector  )
-#     out_hessian = hessian
-# end
