@@ -12,7 +12,7 @@ function solve_non_linear_equation_system(
     numtrials :: Integer = 50,
     tolx      :: Real = 0.000001,
     tolf      :: Real = 0.000001 )
-    print( "x $x" )
+    print( "x=$x thefunc = $thefunc" )
     xs = size( x )[1]
     deltas = zeros( xs )
     error = 0
@@ -21,9 +21,9 @@ function solve_non_linear_equation_system(
         iterations += 1
         errf = 0.0
         errx = 0.0
-        out :: Dict{Symbol, Any} = thefunc( x )
-        gradient = out[:gradient]
-        hessian = out[:hessian]
+        outx :: Dict{Symbol, Any} = thefunc( x )
+        gradient = outx[:gradient]
+        hessian = outx[:hessian]
         for i in 1:xs
             errf += abs( gradient[i])
         end
@@ -62,7 +62,7 @@ function doreweighting(
     gradient = zeros( Float64, ncols, 1 )
     hessian = zeros( Float64, ncols, ncols )
 
-    function computelamdasandhessian( lamdas::Vector )
+    function compute_lamdas_and_hessian( lamdas::Vector )
         print( "ncols $ncols")
         print( "lamdas $lamdas" )
         z = zeros( Float64, ncols, 1 )
@@ -116,11 +116,15 @@ function doreweighting(
         print( "Z" );println( z )
         gradient = a - z
         print( "Gradient $gradient")
-        return Dict(:x=>lamdas,:gradient=>gradient,:hessian=>hessian )
+        d = Dict(:lamdas=>lamdas,:gradient=>gradient,:hessian=>hessian )
+        println( "returning")
+        return d
     end # nested function
 
     lamdas = zeros( Float64, ncols )
-    rc = solve_non_linear_equation_system( computelamdasandhessian, lamdas )
+    print( compute_lamdas_and_hessian )
+    
+    rc = solve_non_linear_equation_system( compute_lamdas_and_hessian, lamdas )
     # print( rc )
     # lamdas = zeros( Float64, ncols )
     # df = TwiceDifferentiable( getLamdas, getGradients!, getHessian!, lamdas )
