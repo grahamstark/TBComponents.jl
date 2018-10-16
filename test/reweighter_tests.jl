@@ -87,8 +87,8 @@ ncols = size( data )[2]
 
    wchi = dochisquarereweighting( data, initial_weights, target_populations )
    println( "direct chi-square results $wchi")
-   tp = wchi' * data
-   @test tp' ≈ target_populations
+   weighted_popn_chi = (wchi' * data)'
+   @test weighted_popn_chi ≈ target_populations
 
    df :: DistanceFunctionType = chi_square
    for method in [
@@ -110,8 +110,8 @@ ncols = size( data )[2]
             ll )
       println( "results for method $method = $rw" )
       weights = rw[:weights]
-      tp2 = weights' * data
-      @test tp2' ≈ target_populations
+      weighted_popn = (weights' * data)'
+      @test weighted_popn ≈ target_populations
       if method != chi_square
          for w in weights # check: what's the 1-liner for this?
             @test w > 0.0
