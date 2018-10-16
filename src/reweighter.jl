@@ -3,25 +3,37 @@
 "
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
 
-const INTERATIONS_EXCEEDED = -1
+const ITERATIONS_EXCEEDED = -1
 
-
+#
+# THIS top-level version of my crude (but effective) solver DOESN'T WORK:
+# as soon as you modify x in this, it fails
+# because the system no longer recognises `thefunc` if it has different
+# values for the x parameter..
+# Replaced with a nested version with x as a semi-global.
+# I also struggled with the Julia native versions in the Optim
+# need to come back to those ..
+#
 function solve_non_linear_equation_system(
     thefunc,
     x         :: Vector,
     numtrials :: Integer = 50,
     tolx      :: Real = 0.000001,
-    tolf      :: Real = 0.000001 )
-    print( "x=$x thefunc = $thefunc" )
+    tolf      :: Real = 0.000001 ) :: Dict{Symbol,Any}
     xs = size( x )[1]
     deltas = zeros( xs )
     error = 0
     iterations = 0
+    # this works around a weird error
+    # in Julia 1.0 where if you change a value
+    # in this call-line
+    # .. but it doesn't
+    lx = copy( x )
     for k in 1:numtrials
         iterations += 1
         errf = 0.0
         errx = 0.0
-        outx :: Dict{Symbol, Any} = thefunc( x )
+        outx :: Dict{Symbol, Any} = thefunc( lx )
         gradient = outx[:gradient]
         hessian = outx[:hessian]
         for i in 1:xs
@@ -30,9 +42,8 @@ function solve_non_linear_equation_system(
         if errf <= tolf
             break
         end
-        # deltas = solve( hessian, gradient )
         deltas = hessian \ gradient
-        x += deltas
+        lx += deltas
         for i in 1:xs
             errx += abs( deltas[i])
         end
@@ -44,8 +55,10 @@ function solve_non_linear_equation_system(
             break
         end
     end
-    return Dict( :x=>x, :iterations=>iterations, :error=>error )
+    return Dict( :x=>lx, :iterations=>iterations, :error=>error )
 end
+
+
 
 function doreweighting(
     data               :: AbstractArray{ <:Real, 2 },
@@ -59,14 +72,60 @@ function doreweighting(
     @assert ncols == size( target_populations )[1]
     @assert nrows == size( initial_weights )[1]
     a = target_populations - (initial_weights'*data)'
-    gradient = zeros( Float64, ncols, 1 )
-    hessian = zeros( Float64, ncols, ncols )
+    lamdas = zeros( Float64, ncols )
 
-    function compute_lamdas_and_hessian( lamdas::Vector )
-        print( "ncols $ncols")
-        print( "lamdas $lamdas" )
+    ##
+    ## horror cpde: document problem with calling func with
+    ## variable input in J1.0. Hence this version
+    ## where lamdas is a semi-global so we don't modify it
+    ## before we call `thefunc`.
+    ##
+    function local_solve_non_linear_equation_system(
+        thefunc,
+        numtrials :: Integer = 50,
+        tolx      :: Real = 0.000001,
+        tolf      :: Real = 0.000001 ) :: Dict{Symbol,Any}
+
+        deltas = zeros( ncols )
+        error = 0
+        iterations = 0
+        for k in 1:numtrials
+            iterations += 1
+            errf = 0.0
+            errx = 0.0
+            outx :: Dict{Symbol, Any} = thefunc()
+
+            gradient = outx[:gradient]
+            hessian = outx[:hessian]
+            for i in 1:ncols
+                 errf += abs( gradient[i])
+            end
+            if errf <= tolf
+                 break
+            end
+            # # deltas = solve( hessian, gradient )
+            deltas = hessian \ gradient
+            lamdas += deltas
+            for i in 1:ncols
+                 errx += abs( deltas[i])
+            end
+            if errx <= tolx
+                 break
+            end
+        end
+        if iterations == numtrials
+             error = ITERATIONS_EXCEEDED
+        end
+        return Dict( :iterations=>iterations, :error=>error )
+    end
+
+    function compute_lamdas_and_hessian()  :: Dict{ Symbol, Any }
+        #print( "ncols $ncols")
+        #print( "lamdas $lamdas" )
+        gradient = zeros( Float64, ncols, 1 )
+        hessian = zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
-        hessian[:,:] .= 0.0
+        # hessian[:,:] .= 0.0
         for row in 1:nrows
             rv = data[row,:]
             u = (rv' * lamdas)[1]
@@ -82,7 +141,7 @@ function doreweighting(
                 if( u < ( rl - 1.0 ))
                    g_m1 = rl
                    d_g_m1 = 0.0
-                elsif( u > ( ru - 1.0 ))
+                elseif( u > ( ru - 1.0 ))
                    g_m1 = ru
                    d_g_m1 = 0.0
                 else
@@ -112,19 +171,21 @@ function doreweighting(
                end
            end
         end # obs loop
-        print( "A" );println( a )
-        print( "Z" );println( z )
+        #println( "A" );println( a )
+        #println( "Z" );println( z )
         gradient = a - z
-        print( "Gradient $gradient")
+        #println( "Gradient $gradient")
         d = Dict(:lamdas=>lamdas,:gradient=>gradient,:hessian=>hessian )
-        println( "returning")
+        #println( "returning")
         return d
     end # nested function
 
-    lamdas = zeros( Float64, ncols )
-    print( compute_lamdas_and_hessian )
-    
-    rc = solve_non_linear_equation_system( compute_lamdas_and_hessian, lamdas )
+    #println( "compute_lamdas_and_hessian = $compute_lamdas_and_hessian" )
+    #println( "lamdas = $lamdas" )
+    #println( typeof( lamdas ))
+
+    rc = local_solve_non_linear_equation_system(
+        compute_lamdas_and_hessian )
     # print( rc )
     # lamdas = zeros( Float64, ncols )
     # df = TwiceDifferentiable( getLamdas, getGradients!, getHessian!, lamdas )
@@ -173,7 +234,7 @@ function doreweighting(
             new_weights[r] = initial_weights[r]*g_m1
         end
     end # converged
-    return Dict(:lamdas=>lamdas, :rc => rc, :weights=>new_weights, :converged => converge )
+    return Dict(:lamdas=>lamdas, :rc => rc, :weights=>new_weights ) # , :converged => converge )
 end # do reweighting
 
 

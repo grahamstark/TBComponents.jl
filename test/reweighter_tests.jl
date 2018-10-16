@@ -1,5 +1,4 @@
 using Test
-
 #
 #
 #
@@ -87,21 +86,45 @@ ncols = size( data )[2]
    # print( a )
 
    wchi = dochisquarereweighting( data, initial_weights, target_populations )
-
+   println( "direct chi-square results $wchi")
    tp = wchi' * data
-
-   print( "chi_square"); print( wchi )
-
-   print( "cs weighted" );print( tp )
-
    @test tp' ≈ target_populations
 
-   rw = doreweighting( data, initial_weights, target_populations, chi_square, 0.0, 0.0 )
-
-   print( rw )
-
-   tp2 = rw[:weights]' * data
-   @test tp2' ≈ target_populations
-
+   df :: DistanceFunctionType = chi_square
+   for method in [
+      chi_square,
+      d_and_s_type_a,
+      d_and_s_type_b,
+      constrained_chi_square,
+      d_and_s_constrained]
+      println( "on method $method")
+      ul = 1.4
+      ll = 0.3
+      rw =
+         doreweighting(
+            data,
+            initial_weights,
+            target_populations,
+            method,
+            ul,
+            ll )
+      println( "results for method $method = $rw" )
+      weights = rw[:weights]
+      tp2 = weights' * data
+      @test tp2' ≈ target_populations
+      if method != chi_square
+         for w in weights # check: what's the 1-liner for this?
+            @test w > 0.0
+         end
+      else
+         @test weights ≈ wchi
+      end
+      if method in [constrained_chi_square, d_and_s_constrained ]
+         for r in 1:nrows
+            @test weights[r] <= initial_weights[r]*ul
+            @test weights[r] >= initial_weights[r]*ll
+         end
+      end
+   end
 
 end # creedy testset
