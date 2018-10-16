@@ -96,7 +96,7 @@ ncols = size( data )[2]
       d_and_s_type_a,
       d_and_s_type_b,
       constrained_chi_square,
-      d_and_s_constrained]
+      d_and_s_constrained] # CHECK: how to iterate neatly over an Enum
       println( "on method $method")
       ul = 1.4
       ll = 0.3
@@ -117,9 +117,10 @@ ncols = size( data )[2]
             @test w > 0.0
          end
       else
-         @test weights ≈ wchi
+         @test weights ≈ wchi # chisq the direct way should match chisq the iterative way
       end
       if method in [constrained_chi_square, d_and_s_constrained ]
+         # check the constrainted methods keep things inside ll and ul
          for r in 1:nrows
             @test weights[r] <= initial_weights[r]*ul
             @test weights[r] >= initial_weights[r]*ll
