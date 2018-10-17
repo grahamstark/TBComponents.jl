@@ -35,7 +35,7 @@ function stepped_tax_calculation(
    ;
    taxable :: Real,
    rates   :: RateBands,
-   bands   :: RateBands ) :: Tax_Result
+   bands   :: RateBands ) :: TaxResult
       # TODO
 
 end
@@ -44,7 +44,7 @@ function calctaxdue(
       ;
    taxable :: Real,
    rates   :: RateBands,
-   bands   :: RateBands ) :: Tax_Result
+   bands   :: RateBands ) :: TaxResult
    due = 0.0
    mr  = 0.0
    remaining = taxable
@@ -60,7 +60,7 @@ function calctaxdue(
       remaining -= gap
       i += 1
    end
-   Tax_Result( due, i )
+   TaxResult( due, i )
 end
 
 #

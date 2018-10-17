@@ -1,5 +1,7 @@
 using Test
 
+include( "minitb.jl")
+
  p1 = Point2D( 1.011,2.011)
  p2 = Point2D( 1.011, 2.011 )
  p3 = Point2D( 1.011, 3.011 )
@@ -25,5 +27,21 @@ bc2 = censor( ps )
 
 println( "bc2 = $bc2 ")
 @test size( bc2 )[1] == 5
+pers = DEFAULT_PERSON
+pars = DEFAULT_PARAMS
+res = calculate( pers, pars )
+println( "res=$res" )
 
  # @test size( ps ) == 4
+
+function makeBC( pers :: Person, params :: Parameters ) :: BudgetConstraint
+
+    function getnet( gross :: Float64 ) :: Float64
+        persedit = modifiedcopy( pers, wage=gross )
+        rc = calculate( persedit, params )
+        return rc[:netincome]
+    end
+
+    bc = makebc( getnet )
+    return bc
+end

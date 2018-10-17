@@ -83,7 +83,7 @@ end
 
 const DEFAULT_PARAMS = Parameters(
         it_allow=500.0,
-        it_rate= [2500, 4000, 5000, 8000, 9000, 10000, 12000, 9999999999999999999.99],
+        it_rate= [ 0.1, 0.25, 0.4, 0.5, 0.7, 0.9, 1.0, 1.2 ],
         it_band=[ 2500, 4000, 5000, 8000, 9000, 10000, 12000, 9999999999999999999.99 ],
         benefit1 = 150.0,
         benefit2 = 60.0,
@@ -100,13 +100,13 @@ function calculatetax( pers :: Person, params :: Parameters ) :: Float64
    tc :: TaxResult = calctaxdue(
       taxable = taxable,
       rates   = params.it_rate,
-      bands   = params.it_bands
+      bands   = params.it_band
     )
     return tc.due
 end
 
 function calculatebenefit1( pers :: Person, params :: Parameters ) :: Float64
-   return ( pers.wage <= params.benefit1 ? pareams.benefit1-pers.wage : 0.0 );
+   return ( pers.wage <= params.benefit1 ? params.benefit1-pers.wage : 0.0 );
 end
 
 function calculatebenefit2( pers :: Person, params :: Parameters ) :: Float64
