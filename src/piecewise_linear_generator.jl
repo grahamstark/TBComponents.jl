@@ -34,7 +34,7 @@ struct BCSettings
     maxgross :: Float64
     increment :: Float64
     tolerance :: Float64
-    round_output :: BOOL
+    round_output :: Bool
 end
 
 const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANCE, true )
@@ -83,6 +83,12 @@ function comparepoints( point_1 :: Point2D, point_2 :: Point2D ) :: Integer
         return 0;
 end
 
+import Base.isless
+
+function isless( point_1 :: Point2D, point_2 :: Point2D ) :: Bool
+    return comparepoints( point_1, point_2 ) < 0
+end
+
 function marginalrate( point_1 :: Point2D, point_2 :: Point2D )::Float64
         mr :: Float64 = 0.0
         if !( point_2.x ≈ point_1.x )
@@ -127,10 +133,11 @@ function toarray( ps :: PointsSet ) :: BudgetConstraint
     for p in ps
         push!( bc, p )
     end
+    sort!( bc ) # , lt=isless
     bc
 end
 
-function censor( ps :: PointsSet ) :: BudgetConstraint )
+function censor( ps :: PointsSet ) :: BudgetConstraint
     bc = toarray( ps )
     nbc = count( bc )
     round!( bc )
@@ -167,9 +174,8 @@ function generate!(
     getnet,  # TODO give this a signature ( Float64 ) :: Float64
     depth    :: Integer,
     startpos :: Float64,
-    endpos   :: Float64
-    settings :: BCSettings,
-    ) :: Integer
+    endpos   :: Float64,
+    settings :: BCSettings ) :: Integer
     if( abs( startpos - endpos ) < settings.tolerance )
         return depth
     end
