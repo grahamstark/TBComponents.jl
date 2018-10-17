@@ -38,7 +38,7 @@ function makebc( pers :: Person, params :: Parameters ) :: BudgetConstraint
 
     function getnet( gross :: Float64 ) :: Float64
         persedit = modifiedcopy( pers, wage=gross )
-        println( "getnet; made person $persedit")
+        # println( "getnet; made person $persedit")
         rc = calculate( persedit, params )
         return rc[:netincome]
     end

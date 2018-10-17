@@ -112,7 +112,9 @@ function ≈(left :: Point2D, right::Point2D )::Bool
 end
 
 function ≈(left :: Line2D, right::Line2D )::Bool
-   # (left.a ≈ right.a) && ( left.b ≈ right.b )
+   # return (left.a ≈ right.a) && ( left.b ≈ right.b )
+   #  FIXME this uses the global tolerance even
+   # if the user overrides it in settings
    return ((( abs(left.a-right.a)) <= TOLERANCE ) && (( abs(left.b-right.b)) <= TOLERANCE ));
 end
 
@@ -178,12 +180,12 @@ function generate!(
     startpos :: Float64,
     endpos   :: Float64,
     settings :: BCSettings ) :: Integer
-    println( "depth $depth")
+    # println( "depth $depth")
     diff = abs( startpos - endpos )
     tolerance = settings.tolerance
-    println( "diff=$diff tolerance=$tolerance " )
+    # println( "diff=$diff tolerance=$tolerance " )
     if( diff < settings.tolerance )
-        println( "going up after tol check.")
+        # println( "going up after tol check.")
         return depth
     end
     if depth > settings.maxdepth
@@ -194,12 +196,12 @@ function generate!(
     p4 = Point2D( endpos, getnet(endpos) )
     p3 = Point2D( endpos-settings.increment, getnet(endpos-settings.increment) )
 
-    println( "p1 $p1 p2 $p2 p3 $p3 p4 $p4")
+    # println( "p1 $p1 p2 $p2 p3 $p3 p4 $p4")
 
     line1 = makeline( p1, p2 )
     line2 = makeline( p3, p4 )
 
-    println( "line1 = $line1 line2 = $line2")
+    # println( "line1 = $line1 line2 = $line2")
 
     if line1 ≈ line2
         push!( bc, p1 )
@@ -211,19 +213,19 @@ function generate!(
     else
         anchor = p5.x
     end
-    println( "p5 = $p5 ")
+    # println( "p5 = $p5 ")
     depth += 1
-    println( "left from $startpos -> $anchor ")
-    println( "right from $anchor -> $endpos ")
+    # println( "left from $startpos -> $anchor ")
+    # println( "right from $anchor -> $endpos ")
     #
     # expore to the left
     #
-    println( "going left")
+    # println( "going left")
     depth = generate!( bc, getnet, depth, startpos, anchor, settings )
     #
     # then the right
     #
-    println( "going right")
+    # println( "going right")
     depth = generate!( bc, getnet, depth, anchor, endpos, settings )
     return depth - 1
 end
@@ -233,11 +235,12 @@ function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetCo
     ps = PointsSet()
     bc = BudgetConstraint()
     depth = 0
-    # try
+    try
         depth = generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
         bc = censor( ps, settings.round_output )
-    # catch e
-    #    println( "failed! $e")
-    # end
+    catch e
+        ## FIXME print a fuller stack trace here
+        println( "failed! $e")
+    end
     bc;
 end
