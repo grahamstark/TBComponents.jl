@@ -164,7 +164,7 @@ end
 
 function generate!(
     bc       :: PointsSet,
-    getnet,
+    getnet,  # TODO give this a signature ( Float64 ) :: Float64
     depth    :: Integer,
     startpos :: Float64,
     endpos   :: Float64
@@ -206,13 +206,15 @@ function generate!(
 end
 
 
-function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS )
+function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetConstraint
     ps = PointSet()
+    bc = BudgetConstraint()
+    depth = 0
     try
-        generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
-        bc :: BudgetConstraint = censor( ps )
+        depth = generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
+        bc = censor( ps )
     catch e
         println( "failed! $depth")
     end
-
+    bc;
 end
