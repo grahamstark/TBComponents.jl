@@ -23,7 +23,7 @@ const PointsSet = Set{Point2DG}
 const VERTICAL   = 9999999999.9999;
 const TOLERANCE  = 0.0001;
 const INCREMENT  = 0.0001;
-const MAX_DEPTH  = 500;
+const MAX_DEPTH  = 50;
 const MAX_INCOME = 20000.0;
 const MIN_INCOME = 0.0;
 
@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANC
 function makeline( point_1 :: Point2D, point_2 :: Point2D )::Line2D
         a :: Float64 = 0.0
         b :: Float64 = 0.0
-        if point_1.x ≈ point_2.x
+        if point_1.x == point_2.x
                 b = point_1.x;
                 a = VERTICAL;
         else
@@ -112,7 +112,8 @@ function ≈(left :: Point2D, right::Point2D )::Bool
 end
 
 function ≈(left :: Line2D, right::Line2D )::Bool
-   (left.a ≈ right.a) && ( left.b ≈ right.b )
+   # (left.a ≈ right.a) && ( left.b ≈ right.b )
+   return ((( abs(left.a-right.a)) <= TOLERANCE ) && (( abs(left.b-right.b)) <= TOLERANCE ));
 end
 
 # round a float to 2dps
@@ -189,11 +190,9 @@ function generate!(
         throw( "max depth exceeded $depth"  )
     end
     p1 = Point2D( startpos, getnet(startpos) )
-    startpos -= settings.increment
-    p2 = Point2D( startpos, getnet(startpos) )
+    p2 = Point2D( startpos+settings.increment, getnet(startpos+settings.increment))
     p4 = Point2D( endpos, getnet(endpos) )
-    endpos -= settings.increment
-    p3 = Point2D( endpos, getnet(endpos) )
+    p3 = Point2D( endpos-settings.increment, getnet(endpos-settings.increment) )
 
     println( "p1 $p1 p2 $p2 p3 $p3 p4 $p4")
 
@@ -236,7 +235,7 @@ function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetCo
     depth = 0
     # try
         depth = generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
-        bc = censor( ps, settings.round )
+        bc = censor( ps, settings.round_output )
     # catch e
     #    println( "failed! $e")
     # end
