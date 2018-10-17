@@ -42,46 +42,46 @@ const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANC
 
 
 function makeline( point_1 :: Point2D, point_2 :: Point2D )::Line2D
-        a :: Float64 = 0.0
-        b :: Float64 = 0.0
-        if point_1.x == point_2.x
-                b = point_1.x;
-                a = VERTICAL;
-        else
-                b = (point_1.y - point_2.y)/(point_1.x - point_2.x );
-                b = min( b, VERTICAL );
-                a = ( point_1.y - point_1.x*b );
-        end
-        return Line2D( a, b );
+    a :: Float64 = 0.0
+    b :: Float64 = 0.0
+    if point_1.x == point_2.x
+        b = point_1.x;
+        a = VERTICAL;
+    else
+        b = (point_1.y - point_2.y)/(point_1.x - point_2.x );
+        b = min( b, VERTICAL );
+        a = ( point_1.y - point_1.x*b );
+    end
+    return Line2D( a, b );
 end
 
 function findintersection( line_1::Line2D, line_2 :: Line2D ) :: Point2D
-        x :: Float64 = 0.0
-        y :: Float64 = 0.0
-        if !( line_1.b ≈ line_2.b )
-                x = (line_2.a - line_1.a) / (line_1.b - line_2.b);
-                y = line_1.a + (x * line_1.b );
-        else
-                x = 0.0;
-                y = line_1.a;
-        end
-        return Point2D( x, y );
+    x :: Float64 = 0.0
+    y :: Float64 = 0.0
+    if !( line_1.b ≈ line_2.b )
+        x = (line_2.a - line_1.a) / (line_1.b - line_2.b);
+        y = line_1.a + (x * line_1.b );
+    else
+        x = 0.0;
+        y = line_1.a;
+    end
+    return Point2D( x, y );
 end
 
 function comparepoints( point_1 :: Point2DG, point_2 :: Point2DG ) :: Integer
-        if( point_1.x > point_2.x )
-                return 1;
-        end
-        if( point_1.x < point_2.x )
-                return -1;
-        end
-        if( point_1.y > point_2.y )
-                return 1;
-        end
-        if( point_1.y < point_2.y )
-                return -1;
-        end
-        return 0;
+    if( point_1.x > point_2.x )
+        return 1;
+    end
+    if( point_1.x < point_2.x )
+        return -1;
+    end
+    if( point_1.y > point_2.y )
+        return 1;
+    end
+    if( point_1.y < point_2.y )
+        return -1;
+    end
+    return 0;
 end
 
 # sorting for points
@@ -92,16 +92,16 @@ function isless( point_1 :: Point2DG, point_2 :: Point2DG ) :: Bool
 end
 
 function marginalrate( point_1 :: Point2D, point_2 :: Point2D )::Float64
-        mr :: Float64 = 0.0
-        if !( point_2.x ≈ point_1.x )
-                mr = 100.0 * (1-(point_2.y-point_1.y) / (point_2.x - point_1.x));
-        else
-                mr = VERTICAL;
-                if( point_2.y < point_1.y )
-                        mr *= -1;
-                end
+    mr :: Float64 = 0.0
+    if !( point_2.x ≈ point_1.x )
+        mr = 100.0 * (1-(point_2.y-point_1.y) / (point_2.x - point_1.x));
+    else
+        mr = VERTICAL;
+        if( point_2.y < point_1.y )
+            mr *= -1;
         end
-        return mr;
+    end
+    return mr;
 end
 
 # approximate equality for points and lines
