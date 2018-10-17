@@ -17,9 +17,12 @@ export calc_indirect, IndirResult
 export calctaxdue, TaxResult
 
 # budget constraint stuff
+export makebc,BCSettings,DEFAULT_SETTINGS
+export Point2DG,Point2D,BudgetConstraint
 
 include("poverty_inequality.jl")
 include("reweighter.jl")
 include("taxcalcs.jl")
+include( "piecewise_linear_generator.jl")
 
 end # module
