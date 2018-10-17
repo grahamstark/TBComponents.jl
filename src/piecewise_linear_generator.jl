@@ -44,7 +44,7 @@ const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANC
 function makeline( point_1 :: Point2D, point_2 :: Point2D )::Line2D
     a :: Float64 = 0.0
     b :: Float64 = 0.0
-    if point_1.x == point_2.x
+    if point_1.x == point_2.x # ?? never taken??
         b = point_1.x;
         a = VERTICAL;
     else
