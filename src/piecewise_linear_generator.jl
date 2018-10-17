@@ -17,7 +17,7 @@ end
 
 const Line2D = Line2DG{Float64}
 
-const BudgetConstraint = Array{Point2DG}
+const BudgetConstraint = Array{Point2DG,1}
 const PointsSet = Set{Point2DG}
 
 const VERTICAL   = 9999999999.9999;
@@ -49,7 +49,7 @@ function makeline( point_1 :: Point2D, point_2 :: Point2D )::Line2D
         else
                 b = (point_1.y - point_2.y)/(point_1.x - point_2.x );
                 b = min( b, VERTICAL );
-                a = ( point_1.y - point_1.x*l.b );
+                a = ( point_1.y - point_1.x*b );
         end
         return Line2D( a, b );
 end
@@ -114,16 +114,17 @@ function ≈(left :: Line2D, right::Line2D )::Bool
    (left.a ≈ right.a) && ( left.b ≈ right.b )
 end
 
+# round a float to 2dps
 function round2pl( x::Float64 )::Float64
     x *= 100.0
     i = trunc(x)
     x = Float64(i/100)
 end
 
-function round!( bc :: BudgetConstraint )
-    nbc = count( bc )
+function round2pl!( bc :: BudgetConstraint )
+    nbc = size( bc )[1]
     for i in 1:nbc
-        p = Point2D( round( bc[i].x ), round( bc[i].y))
+        p = Point2D( round2pl( bc[i].x ), round2pl( bc[i].y))
         bc[i] = p
     end
 end
@@ -138,15 +139,9 @@ function toarray( ps :: PointsSet ) :: BudgetConstraint
     bc
 end
 
-function censor( ps :: PointsSet ) :: BudgetConstraint
-    bc = BudgetConstraint()
-    for p in ps
-        push!( bc, p )
-    end
-    sort!( bc ) # , lt=isless
-
-    nbc = count( bc )
-    round!( bc )
+function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
+    bc = toarray( ps )
+    nbc = size( bc )[1]
     if( nbc < 3 )
         return
     end
@@ -165,13 +160,12 @@ function censor( ps :: PointsSet ) :: BudgetConstraint
         end
     end # while
     i = 1
-    while i < (nbc-1)
-        if bc[i] ≈ bc[i+1]
-            deleteat!( bc, i )
-            nbc -= 1
-        end
-        i+= 1
+    if round
+        round2pl!( bc )
     end
+    # 1 liner which sorts and removed dups
+    bc = BudgetConstraint( toarray(PointsSet( bc )))
+    return bc
 end
 
 
@@ -224,7 +218,7 @@ function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetCo
     depth = 0
     try
         depth = generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
-        bc = censor( ps )
+        bc = censor( ps, settings.round )
     catch e
         println( "failed! $e")
     end
