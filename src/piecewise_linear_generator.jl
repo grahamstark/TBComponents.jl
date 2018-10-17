@@ -214,7 +214,7 @@ function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetCo
         depth = generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
         bc = censor( ps )
     catch e
-        println( "failed! $depth")
+        println( "failed! $e")
     end
     bc;
 end

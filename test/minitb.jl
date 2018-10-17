@@ -15,8 +15,8 @@ const DEFAULT_PERSON = Person( 1_000.0, 40 )
 
 function modifiedcopy(
    copyFrom :: Person;
-   wage :: NullableFloat = missing,
-   age  :: NullableInt = missing
+   wage     :: NullableFloat = missing,
+   age      :: NullableInt = missing
    ) :: Person
 
    Person(
@@ -24,6 +24,7 @@ function modifiedcopy(
       age !== missing ? age : copyFrom.age
    )
 end
+
 
 struct Parameters
    it_allow :: Float64
@@ -35,6 +36,7 @@ struct Parameters
    ben2_l_limit :: Float64
    ben2_u_limit :: Float64
 
+   # attempt a constructor with named parameters
    function Parameters(
       ;
       it_allow :: Float64,
@@ -50,6 +52,9 @@ struct Parameters
    end
 end
 
+#
+# e.g newpars = modifiedcopy( DEFAULT_PARAMS, it_allow=3_000 )
+#
 function modifiedcopy(
    copyFrom :: Parameters;
    it_allow :: NullableFloat = missing,
@@ -84,10 +89,5 @@ const DEFAULT_PARAMS = Parameters(
         ben2_l_limit = 200.03,
         ben2_u_limit = 300.20 )
 
-public struct Results{
 
-        public double Tax {get;set;}
-        public double[] Benefit {get;set;}
-        public double NetIncome {get;set;}
-        public double MR {get;set;}
-}
+const Results = Dict{ Symbol, Any }
