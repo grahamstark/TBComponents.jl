@@ -18,7 +18,7 @@ end
 const Line2D = Line2DG{Float64}
 
 const BudgetConstraint = Array{Point2DG}
-const PointsSet = Set{Point2D}
+const PointsSet = Set{Point2DG}
 
 const VERTICAL   = 9999999999.9999;
 const TOLERANCE  = 0.0001;
@@ -67,7 +67,7 @@ function findintersection( line_1::Line2D, line_2 :: Line2D ) :: Point2D
         return Point2D( x, y );
 end
 
-function comparepoints( point_1 :: Point2D, point_2 :: Point2D ) :: Integer
+function comparepoints( point_1 :: Point2DG, point_2 :: Point2DG ) :: Integer
         if( point_1.x > point_2.x )
                 return 1;
         end
@@ -83,9 +83,10 @@ function comparepoints( point_1 :: Point2D, point_2 :: Point2D ) :: Integer
         return 0;
 end
 
+# sorting for points
 import Base.isless
 
-function isless( point_1 :: Point2D, point_2 :: Point2D ) :: Bool
+function isless( point_1 :: Point2DG, point_2 :: Point2DG ) :: Bool
     return comparepoints( point_1, point_2 ) < 0
 end
 
@@ -138,7 +139,12 @@ function toarray( ps :: PointsSet ) :: BudgetConstraint
 end
 
 function censor( ps :: PointsSet ) :: BudgetConstraint
-    bc = toarray( ps )
+    bc = BudgetConstraint()
+    for p in ps
+        push!( bc, p )
+    end
+    sort!( bc ) # , lt=isless
+
     nbc = count( bc )
     round!( bc )
     if( nbc < 3 )
