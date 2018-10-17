@@ -29,7 +29,35 @@ struct Parameters
       )
       new( it_allow, it_rate, it_band, benefit1, benefit2, ben2_l_limit, ben2_u_limit )
    end
+end
 
+# experiment with types
+const NullableFloat = Union{Missing,Float64}
+const NullableArray = Union{Missing,Array{Float64}}
+
+function modifiedcopy(
+   ;
+   copyFrom :: Parameters,
+   it_allow :: NullableFloat = missing,
+   it_rate  :: NullableArray = missing},
+   it_band  :: NullableArray = missing},
+
+   benefit1 :: NullableFloat = missing,
+   benefit2 :: NullableFloat = missing,
+   ben2_l_limit :: NullableFloat = missing,
+   ben2_u_limit :: NullableFloat = missing
+   ) :: Parameters
+begin
+   Parameters(
+      it_allow = it_allow !== missing ? it_allow: copyFrom.it_allow,
+      it_rate  = it_rate  !== missing ? it_rate : copyFrom.it_rate,
+      it_band  = it_band  !== missing ? it_band : copyFrom.it_band,
+
+      benefit1 = benefit1 !== missing ? benefit1 : copyFrom.benefit1,missing,
+      benefit2 = benefit2 !== missing ? benefit2 : copyFrom.benefit2,missing,
+      ben2_l_limit = ben2_l_limit !== missing ? ben2_l_limit : copyFrom.ben2_l_limit,missing,
+      ben2_u_limit = ben2_u_limit !== missing ? ben2_u_limit : copyFrom.ben2_u_limit,missing
+   )
 end
 
 const DEFAULT_PARAMS = Parameters(
