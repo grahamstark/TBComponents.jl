@@ -34,14 +34,18 @@ println( "res=$res" )
 
  # @test size( ps ) == 4
 
-function makeBC( pers :: Person, params :: Parameters ) :: BudgetConstraint
+function makebc( pers :: Person, params :: Parameters ) :: BudgetConstraint
 
     function getnet( gross :: Float64 ) :: Float64
         persedit = modifiedcopy( pers, wage=gross )
+        println( "getnet; made person $persedit")
         rc = calculate( persedit, params )
         return rc[:netincome]
     end
 
     bc = makebc( getnet )
+
     return bc
 end
+
+makebc( DEFAULT_PERSON, DEFAULT_PARAMS )

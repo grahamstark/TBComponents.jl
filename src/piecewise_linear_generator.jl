@@ -35,9 +35,10 @@ struct BCSettings
     increment :: Float64
     tolerance :: Float64
     round_output :: Bool
+    maxdepth :: Integer
 end
 
-const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANCE, true )
+const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANCE, true, MAX_DEPTH )
 
 
 function makeline( point_1 :: Point2D, point_2 :: Point2D )::Line2D
@@ -59,7 +60,7 @@ function findintersection( line_1::Line2D, line_2 :: Line2D ) :: Point2D
         y :: Float64 = 0.0
         if !( line_1.b ≈ line_2.b )
                 x = (line_2.a - line_1.a) / (line_1.b - line_2.b);
-                y = line_1.a + (p.x * line_1.b );
+                y = line_1.a + (x * line_1.b );
         else
                 x = 0.0;
                 y = line_1.a;
@@ -176,51 +177,68 @@ function generate!(
     startpos :: Float64,
     endpos   :: Float64,
     settings :: BCSettings ) :: Integer
-    if( abs( startpos - endpos ) < settings.tolerance )
+    println( "depth $depth")
+    diff = abs( startpos - endpos )
+    tolerance = settings.tolerance
+    println( "diff=$diff tolerance=$tolerance " )
+    if( diff < settings.tolerance )
+        println( "going up after tol check.")
         return depth
     end
     if depth > settings.maxdepth
         throw( "max depth exceeded $depth"  )
     end
-    p1 = Point2D( startpos, getnet[ startpos ] )
+    p1 = Point2D( startpos, getnet(startpos) )
     startpos -= settings.increment
-    p2 = Point2D( startpos, getnet[ startpos ] )
-    p4 = Point2D( endpos, getnet[ endpos ] )
+    p2 = Point2D( startpos, getnet(startpos) )
+    p4 = Point2D( endpos, getnet(endpos) )
     endpos -= settings.increment
-    p3 = Point2D( endpos, getnet[ endpos ] )
+    p3 = Point2D( endpos, getnet(endpos) )
+
+    println( "p1 $p1 p2 $p2 p3 $p3 p4 $p4")
+
     line1 = makeline( p1, p2 )
     line2 = makeline( p3, p4 )
+
+    println( "line1 = $line1 line2 = $line2")
+
     if line1 ≈ line2
         push!( bc, p1 )
         return depth
     end
     p5 = findintersection( line1, line2 )
     if( p5.x <= startpos ) || ( p5.x >= endpos )
-        anchor = startpos + ( endpos - startpos)/2.0
+        anchor = startpos + (( endpos - startpos)/2.0)
     else
         anchor = p5.x
     end
+    println( "p5 = $p5 ")
+    depth += 1
+    println( "left from $startpos -> $anchor ")
+    println( "right from $anchor -> $endpos ")
     #
     # expore to the left
     #
+    println( "going left")
     depth = generate!( bc, getnet, depth, startpos, anchor, settings )
     #
     # then the right
     #
+    println( "going right")
     depth = generate!( bc, getnet, depth, anchor, endpos, settings )
     return depth - 1
 end
 
 
 function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetConstraint
-    ps = PointSet()
+    ps = PointsSet()
     bc = BudgetConstraint()
     depth = 0
-    try
+    # try
         depth = generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
         bc = censor( ps, settings.round )
-    catch e
-        println( "failed! $e")
-    end
+    # catch e
+    #    println( "failed! $e")
+    # end
     bc;
 end
