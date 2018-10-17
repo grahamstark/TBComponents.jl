@@ -17,7 +17,8 @@ end
 
 const Line2D = Line2DG{Float64}
 
-const BudgetConstraint = Array{Line2DG}
+const BudgetConstraint = Array{Point2DG}
+const PointsSet = Set{Point2D}
 
 const VERTICAL   = 9999999999.9999;
 const TOLERANCE  = 0.0001;
@@ -27,6 +28,17 @@ const MAX_INCOME = 20000.0;
 const MIN_INCOME = 0.0;
 
 const ROUND_OUTPUT = false;
+
+struct BCSettings
+    mingross :: Float64
+    maxgross :: Float64
+    increment :: Float64
+    tolerance :: Float64
+    round_output :: BOOL
+end
+
+const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANCE, true )
+
 
 function makeline( point_1 :: Point2D, point_2 :: Point2D )::Line2D
         a :: Float64 = 0.0
@@ -109,7 +121,17 @@ function round!( bc :: BudgetConstraint )
     end
 end
 
-function censor!( bc :: BudgetConstraint )
+
+function toarray( ps :: PointsSet ) :: BudgetConstraint
+    bc = BudgetConstraint();
+    for p in ps
+        push!( bc, p )
+    end
+    bc
+end
+
+function censor( ps :: PointsSet ) :: BudgetConstraint )
+    bc = toarray( ps )
     nbc = count( bc )
     round!( bc )
     if( nbc < 3 )
@@ -137,4 +159,60 @@ function censor!( bc :: BudgetConstraint )
         end
         i+= 1
     end
+end
+
+
+function generate!(
+    bc       :: PointsSet,
+    getnet,
+    depth    :: Integer,
+    startpos :: Float64,
+    endpos   :: Float64
+    settings :: BCSettings,
+    ) :: Integer
+    if( abs( startpos - endpos ) < settings.tolerance )
+        return depth
+    end
+    if depth > settings.maxdepth
+        throw( "max depth exceeded $depth"  )
+    end
+    p1 = Point2D( startpos, getnet[ startpos ] )
+    startpos -= settings.increment
+    p2 = Point2D( startpos, getnet[ startpos ] )
+    p4 = Point2D( endpos, getnet[ endpos ] )
+    endpos -= settings.increment
+    p3 = Point2D( endpos, getnet[ endpos ] )
+    line1 = makeline( p1, p2 )
+    line2 = makeline( p3, p4 )
+    if line1 ≈ line2
+        push!( bc, p1 )
+        return depth
+    end
+    p5 = findintersection( line1, line2 )
+    if( p5.x <= startpos ) || ( p5.x >= endpos )
+        anchor = startpos + ( endpos - startpos)/2.0
+    else
+        anchor = p5.x
+    end
+    #
+    # expore to the left
+    #
+    depth = generate!( bc, getnet, depth, startpos, anchor, settings )
+    #
+    # then the right
+    #
+    depth = generate!( bc, getnet, depth, anchor, endpos, settings )
+    return depth - 1
+end
+
+
+function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS )
+    ps = PointSet()
+    try
+        generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
+        bc :: BudgetConstraint = censor( ps )
+    catch e
+        println( "failed! $depth")
+    end
+
 end
