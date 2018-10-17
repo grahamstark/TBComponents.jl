@@ -163,8 +163,8 @@ function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
     if round
         round2pl!( bc )
     end
-    # 1 liner which sorts and removed dups
-    bc = BudgetConstraint( toarray(PointsSet( bc )))
+    # 1 liner which sorts and removes dups
+    bc = BudgetConstraint( toarray( PointsSet( bc )))
     return bc
 end
 

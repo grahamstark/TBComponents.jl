@@ -53,6 +53,7 @@ struct Parameters
 end
 
 #
+# Just a test of an idea
 # e.g newpars = modifiedcopy( DEFAULT_PARAMS, it_allow=3_000 )
 #
 function modifiedcopy(
@@ -91,3 +92,36 @@ const DEFAULT_PARAMS = Parameters(
 
 
 const Results = Dict{ Symbol, Any }
+
+## need to include taxcalcs higher up
+
+function calculatetax( pers :: Person, params :: Parameters ) :: Float64
+   taxable = max( 0.0, pers.wage - params.it_allow )
+   tc :: TaxResult = calctaxdue(
+      taxable = taxable,
+      rates   = params.it_rate,
+      bands   = params.it_bands
+    )
+    return tc.due
+end
+
+function calculatebenefit1( pers :: Person, params :: Parameters ) :: Float64
+   return ( pers.wage <= params.benefit1 ? pareams.benefit1-pers.wage : 0.0 );
+end
+
+function calculatebenefit2( pers :: Person, params :: Parameters ) :: Float64
+   b = pers.wage >= params.ben2_l_limit ? params.benefit2 : 0.0
+   if pers.wage > params.ben2_u_limit
+      b -= 30.0
+   end
+   return b
+end
+
+function calculate( pers :: Person, params :: Parameters ) :: Results
+   res = Results()
+   res[:tax] = calculatetax( pers, params )
+   res[:benefit1] = calculatebenefit1( pers, params )
+   res[:benefit2] = calculatebenefit2( pers, params )
+   res[:netincome] = pers.wage + res[:benefit1] + res[:benefit2] - res[:tax]
+   return res
+end

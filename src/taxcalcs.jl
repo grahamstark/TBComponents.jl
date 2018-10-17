@@ -32,6 +32,7 @@ function uprate!(
 end
 
 function stepped_tax_calculation(
+   ;
    taxable :: Real,
    rates   :: RateBands,
    bands   :: RateBands ) :: Tax_Result
@@ -39,26 +40,27 @@ function stepped_tax_calculation(
 
 end
 
-function calc_tax_due(
-      taxable :: Real,
-      rates   :: RateBands,
-      bands   :: RateBands ) :: Tax_Result
-      due = 0.0
-      mr  = 0.0
-      remaining = taxable
-      i = 1
-      while remaining > 0.0
-         if i > 1
-            gap = bands[i]-bands[i-1]
-         else
-            gap = bands[1]
-         end
-         t = min( remaining, gap )
-         due += t*rates[i]
-         remaining -= gap
-         i += 1
+function calctaxdue(
+      ;
+   taxable :: Real,
+   rates   :: RateBands,
+   bands   :: RateBands ) :: Tax_Result
+   due = 0.0
+   mr  = 0.0
+   remaining = taxable
+   i = 1
+   while remaining > 0.0
+      if i > 1
+         gap = bands[i]-bands[i-1]
+      else
+         gap = bands[1]
       end
-      Tax_Result( due, i )
+      t = min( remaining, gap )
+      due += t*rates[i]
+      remaining -= gap
+      i += 1
+   end
+   Tax_Result( due, i )
 end
 
 #
