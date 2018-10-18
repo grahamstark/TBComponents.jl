@@ -99,7 +99,7 @@ function makepoverty(
     foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,
     weightpos                     :: Integer = 1,
     incomepos                     :: Integer = 2 ) :: Dict{ Symbol, Any }
-    start_t = time_ns()
+    # start_t = time_ns()
     data = makeaugmented( rawdata, weightpos, incomepos )
 
     pv = Dict{ Symbol, Any}()
@@ -119,10 +119,10 @@ function makepoverty(
 
     belowline = makeallbelowline( data, line )
     nbrrows = size( belowline )[1]
-    initialised_t = time_ns()
+    # initialised_t = time_ns()
 
     pv[:gini_amongst_poor] = makegini( belowline )
-    main_start_t = time_ns()
+    # main_start_t = time_ns()
 
     for row in 1:nbrrows
         inc :: Float64= belowline[row,INCOME]
@@ -140,7 +140,7 @@ function makepoverty(
         end
     end # main loop
 
-    main_end_t = time_ns()
+    # main_end_t = time_ns()
     pv[:watts] /= population
     if growth > 0.0
         pv[:time_to_exit] = pv[:watts]/growth
@@ -167,30 +167,30 @@ function makepoverty(
         gdata[gpos,WEIGHT] = data[row,WEIGHT]
     end
     gdata = makeaugmented( gdata, 1, 2, false )
-    shorr_made_data = time_ns()
+    # shorr_made_data = time_ns()
     pv[:poverty_gap_gini] = makegini( gdata )
 
     pv[:sen] = pv[:headcount]*pv[:gini_amongst_poor]+pv[:gap]*(1.0-pv[:gini_amongst_poor])
     pv[:shorrocks] = pv[:headcount]*pv[:gap]*(1.0+pv[:poverty_gap_gini])
-    shorr_end_t = time_ns()
+    # shorr_end_t = time_ns()
 
-    elapsed = Float64(initialised_t - start_t)/1_000_000_000.0
-    @printf "initialisation time      %0.5f s\n" elapsed
-
-    elapsed = Float64(main_end_t - main_start_t)/1_000_000_000.0
-    @printf "main loop time          %0.5f s\n" elapsed
-
-    elapsed = Float64(shorr_start_t - main_end_t)/1_000_000_000.0
-    @printf "finalised main calcs   %0.5f s\n" elapsed
-
-    elapsed = Float64(shorr_made_data - shorr_start_t)/1_000_000_000.0
-    @printf "shor/sen data creation    %0.5f s\n" elapsed
-
-    elapsed = Float64(shorr_end_t - shorr_made_data)/1_000_000_000.0
-    @printf "shor/sen calcs        %0.5f s\n" elapsed
-
-    elapsed = Float64(shorr_end_t - start_t)/1_000_000_000.0
-    @printf "total elapsed        %0.5f s\n" elapsed
+    # elapsed = Float64(initialised_t - start_t)/1_000_000_000.0
+    # @printf "initialisation time      %0.5f s\n" elapsed
+    #
+    # elapsed = Float64(main_end_t - main_start_t)/1_000_000_000.0
+    # @printf "main loop time          %0.5f s\n" elapsed
+    #
+    # elapsed = Float64(shorr_start_t - main_end_t)/1_000_000_000.0
+    # @printf "finalised main calcs   %0.5f s\n" elapsed
+    #
+    # elapsed = Float64(shorr_made_data - shorr_start_t)/1_000_000_000.0
+    # @printf "shor/sen data creation    %0.5f s\n" elapsed
+    #
+    # elapsed = Float64(shorr_end_t - shorr_made_data)/1_000_000_000.0
+    # @printf "shor/sen calcs        %0.5f s\n" elapsed
+    #
+    # elapsed = Float64(shorr_end_t - start_t)/1_000_000_000.0
+    # @printf "total elapsed        %0.5f s\n" elapsed
 
     return pv
 end # makepoverty

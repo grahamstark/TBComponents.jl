@@ -17,7 +17,6 @@ and I'm sure could be made more efficient.
 
 * fuller docs;
 * better test suite;
-* more inequality measures: Palma, bits of decomposable indexes;
 * understand generics better;
 * fix the TODOs.
 
