@@ -27,3 +27,7 @@ Haughton, Jonathan, and Shahidur R. Khandker. ‘Handbook on Poverty and Inequal
 Preston, Ian. ‘Inequality and Income Gaps’. IFS Working Paper. Institute for Fiscal Studies, 5 December 2006. https://econpapers.repec.org/paper/ifsifsewp/06_2f25.htm.
 
 Reed, Howard, and Graham Stark. ‘Tackling Child Poverty Delivery Plan - Forecasting Child Poverty in Scotland’. Scottish Government, 9 March 2018. http://www.gov.scot/Publications/2018/03/2911/0.
+
+## Tax Calculations
+
+Hood, Andrew, Rowntree, Barra. ‘Fiscal Facts: Tax and Benefits - Institute For Fiscal Studies - IFS’. Accessed 1 February 2017. https://www.ifs.org.uk/tools_and_resources/fiscal_facts/.

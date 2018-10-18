@@ -33,7 +33,7 @@ This function takes some recorded spending on a good, a typical price for that g
 * Specific Tax - a per-unit tax.
 
 In the UK/Scotland, only tobacco has all three applied to it. Alcohol has VAT
-and specific duties.
+and specific duties. See [IFS's Fiscal Facts](biblio.md)
 
 The routine produces a record showing how much of each type of tax is paid, the `factor cost` (costs other than tax), and total tax paid.
 
@@ -53,7 +53,7 @@ duties.
 
 ## Other things
 
-There is also the skeleton of some other code here, for uprating tax bands according to the rules in the UK Finance Act (YEAR), and for the 'stepped' tax calculation formerly used for the UK National Insurance payroll tax. 
+There is also the skeleton of some other code here, for uprating tax bands according to the rules in the UK Finance Act (YEAR), and for the 'stepped' tax calculation formerly used for the UK National Insurance payroll tax.
 
 ## TODO
 
