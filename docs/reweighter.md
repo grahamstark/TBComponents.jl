@@ -31,7 +31,7 @@ function doreweighting(
     tolf               :: Real = 0.000001 ) :: Dict{ Symbol, Any }
 
 ```
-See the [testcase](..\tests\reweighter_tests.jl) for a simple example, based on
+See the [testcase](..\test\reweighter_tests.jl) for a simple example, based on
 examples from the [Creedy](biblio.md) paper.
 
 The form of 'closeness' used is determined by the `functiontype` parameter of
