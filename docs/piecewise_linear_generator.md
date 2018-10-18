@@ -40,3 +40,7 @@ The routine is controlled by a `BCSettings` struct; there is a `DEFAULT_SETTINGS
 
 
 ## Problems/TODO
+
+* the tolerance isn't used consistently (see `nearlysameline`);
+* I may be misunderstanding abstract types in the declarations;
+* possibly use some definition of point, line, etc. from some standard package.
