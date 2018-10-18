@@ -68,7 +68,7 @@ end
     # d should be a big version of a and also produce same result
     country_d = vcn( country_a, 50 )
     # attempt to blow things up with huge a clone
-    country_d = vcn( country_c, 1_000_000 )
+    country_d = vcn( country_c, 100_000 )
 
     # very unbalanced copy of dataset 1 with 10,000 weight1 1:2 and 2 weight 10,000 7:10
     country_e = vcn( country_c[1:2,:], 10_000 )
