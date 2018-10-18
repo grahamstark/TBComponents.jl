@@ -1,8 +1,10 @@
 # TBComponents.jl
 
-Some microsimulation stuff in Julia.
+Some microsimulation stuff in Julia. This is a library of some general purpose
+code for building tax-benefit models. My intention is to use this as part of a
+Tax Benefit model for Scotland. That will be a separate project.
 
-This contains code for:
+There is code for:
 
 * [generating standard poverty and inequality measures](docs/poverty_inequality.md);
 * [generating exact piecewise-linear budget constraints](docs/piecewise_linear_generator.md);
@@ -14,10 +16,10 @@ on versions from other languages, so the code is likely not very idiomatic and
 I'm sure could be made more efficient.
 
 * fuller docs;
-* better coding;
+* better test suite;
 * more inequality measures: Palma, bits of decomposable indexes;
 * understand generics better;
-* ....
+* fix the TODOs
 
 ## More
 
