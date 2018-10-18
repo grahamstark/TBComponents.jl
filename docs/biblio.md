@@ -14,6 +14,9 @@ Deville, Jean-Claude, and Carl-Erik Sarndal. “Calibration Estimators in Survey
 
 Merz, Joachim. ‘Microdata Adjustment by the Minimum Information Loss Principle’. SSRN Scholarly Paper. Rochester, NY: Social Science Research Network, 1 July 1994. https://papers.ssrn.com/abstract=1417310.
 
+D’Souza, John. ‘A Stata Program for Calibration Weighting’. United Kingdom Stata Users’ Group Meetings 2010. Stata Users Group, 17 September 2010. https://ideas.repec.org/p/boc/usug10/02.html.
+
+
 
 ## Inequality and Poverty
 
@@ -22,3 +25,5 @@ Cobham Alex, and Sumner Andy. “Is Inequality All about the Tails?: The Palma M
 Haughton, Jonathan, and Shahidur R. Khandker. ‘Handbook on Poverty and Inequality’. The World Bank, 27 March 2009. http://documents.worldbank.org/curated/en/488081468157174849/Handbook-on-poverty-and-inequality.
 
 Preston, Ian. ‘Inequality and Income Gaps’. IFS Working Paper. Institute for Fiscal Studies, 5 December 2006. https://econpapers.repec.org/paper/ifsifsewp/06_2f25.htm.
+
+Reed, Howard, and Graham Stark. ‘Tackling Child Poverty Delivery Plan - Forecasting Child Poverty in Scotland’. Scottish Government, 9 March 2018. http://www.gov.scot/Publications/2018/03/2911/0.
