@@ -54,6 +54,9 @@ Notes:
 
 Return is a also a Dict of inequality measures.
 
+There's also a small `binify` routine which chops a dataset up
+into chunks of cumulative income and population suitable for drawing [Lorenz Curves](https://en.wikipedia.org/wiki/Lorenz_curve).
+
 ## TODO
 
 * more inequality measures: Palma
