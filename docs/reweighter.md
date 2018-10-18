@@ -34,8 +34,9 @@ function doreweighting(
 See the [testcase](..\tests\reweighter_tests.jl) for a simple example, based on
 examples from the [Creedy](biblio.md) paper.
 
-The form of 'closeness' used is determined by the `functiontype` parameter. See
-the [Creedy and Deville and Sarndal](biblio.md) papers on these. Notes on these:
+The form of 'closeness' used is determined by the `functiontype` parameter of
+enumerated type `DistanceFunctionType`. See the [Creedy and Deville and
+Sarndal](biblio.md) papers on these. Notes on these:
 
 * `chi_square` - minimising the squared difference between old and new weights can produce negative weights;
 * `constrained_chi_square` usually works best - this produces squared-difference weights that are at most `ru` times the original weight and at least `rl` times the original.
