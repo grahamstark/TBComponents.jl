@@ -90,12 +90,7 @@ ncols = size( data )[2]
    weighted_popn_chi = (wchi' * data)'
    @test weighted_popn_chi ≈ target_populations
 
-   for method in [
-      chi_square,
-      d_and_s_type_a,
-      d_and_s_type_b,
-      constrained_chi_square,
-      d_and_s_constrained] # CHECK: how to iterate neatly over an Enum
+   for method in instances( DistanceFunctionType )
       println( "on method $method")
       ul = 1.4
       ll = 0.3
