@@ -69,7 +69,7 @@ ncols = size( data )[2]
    println( "direct chi-square results $wchi")
    weighted_popn_chi = (wchi' * data)'
    @test weighted_popn_chi ≈ target_populations
-   lower_multiple = 0.65 # any smaller min and d_and_s_constrained fails on this dataset
+   lower_multiple = 0.60 # any smaller min and d_and_s_constrained fails on this dataset
    upper_multiple = 1.3
    for method in instances( DistanceFunctionType )
       println( "on method $method")
