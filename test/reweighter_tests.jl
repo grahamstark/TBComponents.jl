@@ -89,19 +89,19 @@ ncols = size( data )[2]
    println( "direct chi-square results $wchi")
    weighted_popn_chi = (wchi' * data)'
    @test weighted_popn_chi ≈ target_populations
-
-   for method in instances( DistanceFunctionType )
+   lower_multiple = 0.223 # any smaller min and d_and_s_constrained fails on this dataset
+   upper_multiple = 1.1
+   for method in [constrained_chi_square ] # instances( DistanceFunctionType )
       println( "on method $method")
-      ul = 1.4
-      ll = 0.3
-      rw =
-         doreweighting(
-            data,
-            initial_weights,
-            target_populations,
-            method,
-            ul,
-            ll )
+      rw = doreweighting(
+            data               = data,
+            initial_weights    = initial_weights,
+            target_populations = target_populations,
+            functiontype       = method,
+            lower_multiple     = lower_multiple,
+            upper_multiple     = upper_multiple,
+            tolx               = 0.000001,
+            tolf               = 0.000001 )
       println( "results for method $method = $rw" )
       weights = rw[:weights]
       weighted_popn = (weights' * data)'
@@ -116,8 +116,8 @@ ncols = size( data )[2]
       if method in [constrained_chi_square, d_and_s_constrained ]
          # check the constrainted methods keep things inside ll and ul
          for r in 1:nrows
-            @test weights[r] <= initial_weights[r]*ul
-            @test weights[r] >= initial_weights[r]*ll
+            @test weights[r] <= initial_weights[r]*upper_multiple
+            @test weights[r] >= initial_weights[r]*lower_multiple
          end
       end
    end

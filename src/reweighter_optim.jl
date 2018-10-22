@@ -1,3 +1,7 @@
+using Optim
+
+Buffer = Dict{Symbol,Any}
+
 "
    Implements the micro data weighting procedures from:
    * Creedy 2003 http://www.treasury.govt.nz/publications/research-policy/wp/2003/03-17/twp03-17.pdf
@@ -8,58 +12,6 @@
 
 const ITERATIONS_EXCEEDED = -1
 
-#
-# THIS top-level version of my crude (but effective) solver DOESN'T WORK:
-# as soon as you modify x in this, it fails
-# because the system no longer recognises `thefunc` if it has different
-# values for the x parameter..
-# Replaced with a nested version with x as a semi-global.
-# I also struggled with the Julia native versions in the Optim
-# need to come back to those ..
-#
-function solve_non_linear_equation_system(
-    thefunc,
-    x         :: Vector,
-    numtrials :: Integer = 50,
-    tolx      :: Real = 0.000001,
-    tolf      :: Real = 0.000001 ) :: Dict{Symbol,Any}
-    xs = size( x )[1]
-    deltas = zeros( xs )
-    error = 0
-    iterations = 0
-    # this works around a weird error
-    # in Julia 1.0 where if you change a value
-    # in this call-line
-    # .. but it doesn't
-    lx = copy( x )
-    for k in 1:numtrials
-        iterations += 1
-        errf = 0.0
-        errx = 0.0
-        outx :: Dict{Symbol, Any} = thefunc( lx )
-        gradient = outx[:gradient]
-        hessian = outx[:hessian]
-        for i in 1:xs
-            errf += abs( gradient[i])
-        end
-        if errf <= tolf
-            break
-        end
-        deltas = hessian \ gradient
-        lx += deltas
-        for i in 1:xs
-            errx += abs( deltas[i])
-        end
-        if errx <= tolx
-            break
-        end
-        if iterations == numtrials
-            error = ITERATIONS_EXCEEDED
-            break
-        end
-    end
-    return Dict( :x=>lx, :iterations=>iterations, :error=>error )
-end
 
 "
 Make a weights vector which weights the matrix `data`
@@ -93,14 +45,13 @@ function doreweighting(
     upper_multiple     :: Real = 0.0,
     lower_multiple     :: Real = 0.0,
     tolx               :: Real = 0.000001,
-    tolf               :: Real = 0.000001 ) :: Dict{ Symbol, Any }
+    tolf               :: Real = 0.000001 ) :: Buffer
 
     nrows = size( data )[1]
     ncols = size( data )[2]
     @assert ncols == size( target_populations )[1]
     @assert nrows == size( initial_weights )[1]
     a = target_populations - (initial_weights'*data)'
-    lamdas = zeros( Float64, ncols )
     ru = upper_multiple # shorthand
     rl = lower_multiple
     ##
@@ -109,42 +60,8 @@ function doreweighting(
     ## where lamdas is a semi-global so we don't modify it
     ## before we call `thefunc`.
     ##
-    function local_solve_non_linear_equation_system(
-        thefunc,
-        numtrials :: Integer = 50 ) :: Dict{Symbol,Any}
 
-        deltas = zeros( ncols )
-        error = 0
-        iterations = 0
-        for k in 1:numtrials
-            iterations += 1
-            errf = 0.0
-            errx = 0.0
-            outx :: Dict{Symbol, Any} = thefunc()
-            gradient = outx[:gradient]
-            hessian = outx[:hessian]
-            for i in 1:ncols
-                 errf += abs( gradient[i])
-            end
-            if errf <= tolf
-                 break
-            end
-            deltas = hessian \ gradient
-            lamdas += deltas
-            for i in 1:ncols
-                 errx += abs( deltas[i])
-            end
-            if errx <= tolx
-                 break
-            end
-        end
-        if iterations == numtrials
-             error = ITERATIONS_EXCEEDED
-        end
-        return Dict( :iterations=>iterations, :error=>error )
-    end
-
-    function compute_lamdas_and_hessian()  :: Dict{ Symbol, Any }
+    function compute_lamdas_and_hessian( lamdas : Vector )  :: Dict{ Symbol, Any }
         gradient = zeros( Float64, ncols, 1 )
         hessian = zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
@@ -195,8 +112,32 @@ function doreweighting(
         return d
     end # nested function
 
-    rc = local_solve_non_linear_equation_system(
-        compute_lamdas_and_hessian )
+    function f( lamdas : Vector, buff : Buffer ) : Float64
+        buff = compute_lamdas_and_hessian( lamdas )
+        return 0.0 # the actual thing being minimised is irrelevant
+    end
+
+    function g( lamdas : Vector, buff : Buffer )
+        return buff[:gradient]
+    end
+
+    function h( lamdas : Vector, buff : Buffer )
+        return buff[:hessian]
+    end
+
+    lamdas = Vector( ncols )
+    buff = Buffer()
+    initial_x = zeros( ncols )
+
+    optprob = TwiceDifferentiable(
+                (x) -> f( lamdas, buff ),
+                (x) -> g( lamdas, buff ),
+                (x) -> h( lamdas, buff ),
+                initial_x,
+                inplace=false )
+    rc = optimize( optprob, initial_x )
+    print( rc )
+
 
     # fixme: my failed attempt to use Optim code.
     # this has to be better once I get the hang of it.
@@ -221,7 +162,8 @@ function doreweighting(
 
     new_weights = copy(initial_weights)
     # construct the new weights from the lamdas
-    if rc[:error] == 0
+    if converged( rc )
+        lamdas = minimizer( rc )
         for r in 1:nrows
             row = data[r,:]
             u = (row'*lamdas)[1]
@@ -250,7 +192,7 @@ function doreweighting(
             new_weights[r] = initial_weights[r]*g_m1
         end
     end # converged
-    return Dict(:lamdas=>lamdas, :rc => rc, :weights=>new_weights ) # , :converged => converge )
+    return Buffer(:lamdas=>lamdas, :rc => rc, :weights=>new_weights ) # , :converged => converge )
 end # do reweighting
 
 
