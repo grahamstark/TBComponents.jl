@@ -3,7 +3,7 @@ using Printf
 using Test
 
 include( "../src/taxcalcs.jl" )
-include( "../src/reweighter_optim.jl" )
+include( "../src/reweighter.jl" )
 include( "../src/poverty_inequality.jl" )
 include( "../src/piecewise_linear_generator.jl" )
 
