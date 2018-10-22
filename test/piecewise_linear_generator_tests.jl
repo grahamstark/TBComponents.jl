@@ -48,6 +48,4 @@ function makebc( pers :: Person, params :: Parameters ) :: BudgetConstraint
     return bc
 end
 
-bc = makebc( DEFAULT_PERSON, DEFAULT_PARAMS )
-
-println( bc )
+makebc( DEFAULT_PERSON, DEFAULT_PARAMS )

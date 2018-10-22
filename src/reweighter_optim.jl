@@ -1,4 +1,4 @@
-using Optim
+using M
 
 Buffer = Dict{Symbol,Any}
 
@@ -9,9 +9,6 @@ Buffer = Dict{Symbol,Any}
    * Jean-Claude Deville and Carl-Erik Sarndal http://www.jstor.org/stable/2290268
 "
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
-
-const ITERATIONS_EXCEEDED = -1
-
 
 "
 Make a weights vector which weights the matrix `data`
@@ -54,18 +51,19 @@ function doreweighting(
     a = target_populations - (initial_weights'*data)'
     ru = upper_multiple # shorthand
     rl = lower_multiple
-    ##
-    ## horror cpde: document problem with calling func with
-    ## variable input in J1.0. Hence this version
-    ## where lamdas is a semi-global so we don't modify it
-    ## before we call `thefunc`.
-    ##
 
-    function compute_lamdas_and_hessian( lamdas : Vector )  :: Dict{ Symbol, Any }
+    #
+    # instead of minimising the loss function (G) we just need to find the zeros
+    # of the 1st derivatives. This computes the derivatives and the hessian
+    # of the G function, hence the slightly confusing names (gradient=>1st deriv of G)
+    # See table 3 and eqns 25 and 26 in Creedy 2003 http://ideas.repec.org/p/nzt/nztwps/03-17.html
+    # This version is in the 'fj' form needed for the NLsolve package if we want to
+    # generate the derivative and hessian in one go, as we do since it's a potentially huge loop
+    #
+    function compute_lamdas_and_hessian( lamdas :: Vector ) :: Tuple{Vector,Matrix}
         gradient = zeros( Float64, ncols, 1 )
         hessian = zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
-        # hessian[:,:] .= 0.0
         for row in 1:nrows
             rv = data[row,:]
             u = (rv' * lamdas)[1]
@@ -108,62 +106,30 @@ function doreweighting(
            end
         end # obs loop
         gradient = a - z
-        d = Dict(:lamdas=>lamdas,:gradient=>gradient,:hessian=>hessian )
-        return d
+        println( "gradient $gradient")
+        return ( gradient, hessian )
     end # nested function
 
-    function f( lamdas : Vector, buff : Buffer ) : Float64
-        buff = compute_lamdas_and_hessian( lamdas )
-        return 0.0 # the actual thing being minimised is irrelevant
-    end
-
-    function g( lamdas : Vector, buff : Buffer )
-        return buff[:gradient]
-    end
-
-    function h( lamdas : Vector, buff : Buffer )
-        return buff[:hessian]
-    end
-
-    lamdas = Vector( ncols )
-    buff = Buffer()
-    initial_x = zeros( ncols )
-
-    optprob = TwiceDifferentiable(
-                (x) -> f( lamdas, buff ),
-                (x) -> g( lamdas, buff ),
-                (x) -> h( lamdas, buff ),
-                initial_x,
-                inplace=false )
-    rc = optimize( optprob, initial_x )
+    initial_lamdas = ones( ncols )
+    lamdas = copy( initial_lamdas )
+    objective = only_fj( f_and_j ) # this means: we're providing one function 'fj' which
+                                   # computes both the first derivatives value and the hessian
+    rc = nlsolve(
+        objective,
+        initial_lamdas,
+        inplace        = false,
+        # method         = :newton,
+        # autoscale      = true,
+        extended_trace = true )
+        # xtol           = tolx,
+        # ftol           = tolf )
     print( rc )
-
-
-    # fixme: my failed attempt to use Optim code.
-    # this has to be better once I get the hang of it.
-    # =================================================
-    # print( rc )
-    # lamdas = zeros( Float64, ncols )
-    # df = TwiceDifferentiable( getLamdas, getGradients!, getHessian!, lamdas )
-    #
-    # lx = fill(-Inf, ncols); ux = fill(Inf, ncols )
-    # dfc = TwiceDifferentiableConstraints(lx, ux )
-    # # rc = optimize( df, dfc, lamdas, IPNewton() )
-    #
-    # rc = optimize(
-    #         getLamdas,
-    #         getGradients!,
-    #         getHessian!,
-    #         lamdas,
-    #         Newton() )
-    # rc = optimize( only_fj!( fj! ), lamdas )
-    # converge = converged( rc )
-    # ==============================================
 
     new_weights = copy(initial_weights)
     # construct the new weights from the lamdas
     if converged( rc )
-        lamdas = minimizer( rc )
+        lamdas = ( rc.zero )
+        println( "lamdas are $lamdas")
         for r in 1:nrows
             row = data[r,:]
             u = (row'*lamdas)[1]

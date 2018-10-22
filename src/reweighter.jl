@@ -8,58 +8,6 @@
 
 const ITERATIONS_EXCEEDED = -1
 
-#
-# THIS top-level version of my crude (but effective) solver DOESN'T WORK:
-# as soon as you modify x in this, it fails
-# because the system no longer recognises `thefunc` if it has different
-# values for the x parameter..
-# Replaced with a nested version with x as a semi-global.
-# I also struggled with the Julia native versions in the Optim
-# need to come back to those ..
-#
-function solve_non_linear_equation_system(
-    thefunc,
-    x         :: Vector,
-    numtrials :: Integer = 50,
-    tolx      :: Real = 0.000001,
-    tolf      :: Real = 0.000001 ) :: Dict{Symbol,Any}
-    xs = size( x )[1]
-    deltas = zeros( xs )
-    error = 0
-    iterations = 0
-    # this works around a weird error
-    # in Julia 1.0 where if you change a value
-    # in this call-line
-    # .. but it doesn't
-    lx = copy( x )
-    for k in 1:numtrials
-        iterations += 1
-        errf = 0.0
-        errx = 0.0
-        outx :: Dict{Symbol, Any} = thefunc( lx )
-        gradient = outx[:gradient]
-        hessian = outx[:hessian]
-        for i in 1:xs
-            errf += abs( gradient[i])
-        end
-        if errf <= tolf
-            break
-        end
-        deltas = hessian \ gradient
-        lx += deltas
-        for i in 1:xs
-            errx += abs( deltas[i])
-        end
-        if errx <= tolx
-            break
-        end
-        if iterations == numtrials
-            error = ITERATIONS_EXCEEDED
-            break
-        end
-    end
-    return Dict( :x=>lx, :iterations=>iterations, :error=>error )
-end
 
 "
 Make a weights vector which weights the matrix `data`
@@ -137,7 +85,7 @@ function doreweighting(
             if errx <= tolx
                  break
             end
-        end
+        end # trials
         if iterations == numtrials
              error = ITERATIONS_EXCEEDED
         end
@@ -148,7 +96,6 @@ function doreweighting(
         gradient = zeros( Float64, ncols, 1 )
         hessian = zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
-        # hessian[:,:] .= 0.0
         for row in 1:nrows
             rv = data[row,:]
             u = (rv' * lamdas)[1]
@@ -198,58 +145,45 @@ function doreweighting(
     rc = local_solve_non_linear_equation_system(
         compute_lamdas_and_hessian )
 
-    # fixme: my failed attempt to use Optim code.
-    # this has to be better once I get the hang of it.
-    # =================================================
-    # print( rc )
-    # lamdas = zeros( Float64, ncols )
-    # df = TwiceDifferentiable( getLamdas, getGradients!, getHessian!, lamdas )
-    #
-    # lx = fill(-Inf, ncols); ux = fill(Inf, ncols )
-    # dfc = TwiceDifferentiableConstraints(lx, ux )
-    # # rc = optimize( df, dfc, lamdas, IPNewton() )
-    #
-    # rc = optimize(
-    #         getLamdas,
-    #         getGradients!,
-    #         getHessian!,
-    #         lamdas,
-    #         Newton() )
-    # rc = optimize( only_fj!( fj! ), lamdas )
-    # converge = converged( rc )
-    # ==============================================
-
     new_weights = copy(initial_weights)
-    # construct the new weights from the lamdas
-    if rc[:error] == 0
+    @assert rc[:error] == 0
+    for r in 1:nrows
+        row = data[r,:]
+        u = (row'*lamdas)[1]
+        g_m1 = 0.0
+        if functiontype == chi_square
+            g_m1 = 1.0 + u;
+        elseif functiontype == constrained_chi_square
+            if( u < ( rl - 1.0 ))
+               g_m1 = rl
+            elsif( u > ( ru - 1.0 ))
+               g_m1 = ru
+            else
+               g_m1 = 1.0 + u
+            end
+        elseif functiontype == d_and_s_type_a
+           g_m1 = ( 1.0 -  u/2.0 ) ^ ( -2 )
+        elseif functiontype == d_and_s_type_b
+           g_m1 = ( 1.0- u ) ^ (-1 )
+        elseif functiontype == d_and_s_constrained
+           alpha = ( ru - rl ) / (( 1.0 - rl )*( ru - 1.0 ))
+           g_m1 = rl*(ru-1.0)+ru*(1.0-rl)*exp( alpha*u )/((ru-1.0)+(1.0-rl)*(exp( alpha*u )))
+       end # function cases
+        #
+        # Creedy wp 03/17 table 3
+        #
+        new_weights[r] = initial_weights[r]*g_m1
+    end
+    if method in [constrained_chi_square, d_and_s_constrained ]
+     # check the constrainted methods keep things inside ll and ul
         for r in 1:nrows
-            row = data[r,:]
-            u = (row'*lamdas)[1]
-            g_m1 = 0.0
-            if functiontype == chi_square
-                g_m1 = 1.0 + u;
-            elseif functiontype == constrained_chi_square
-                if( u < ( rl - 1.0 ))
-                   g_m1 = rl
-                elsif( u > ( ru - 1.0 ))
-                   g_m1 = ru
-                else
-                   g_m1 = 1.0 + u
-                end
-            elseif functiontype == d_and_s_type_a
-               g_m1 = ( 1.0 -  u/2.0 ) ^ ( -2 )
-            elseif functiontype == d_and_s_type_b
-               g_m1 = ( 1.0- u ) ^ (-1 )
-            elseif functiontype == d_and_s_constrained
-               alpha = ( ru - rl ) / (( 1.0 - rl )*( ru - 1.0 ))
-               g_m1 = rl*(ru-1.0)+ru*(1.0-rl)*exp( alpha*u )/((ru-1.0)+(1.0-rl)*(exp( alpha*u )))
-           end # function cases
-            #
-            # Creedy wp 03/17 table 3
-            #
-            new_weights[r] = initial_weights[r]*g_m1
+            @assert new_weights[r] <= initial_weights[r]*upper_multiple
+            @assert new_weights[r] >= initial_weights[r]*lower_multiple
         end
-    end # converged
+    end #
+    weighted_totals = (new_weights' * data)'
+    @assert weighted_totals ≈ target_populations
+
     return Dict(:lamdas=>lamdas, :rc => rc, :weights=>new_weights ) # , :converged => converge )
 end # do reweighting
 
