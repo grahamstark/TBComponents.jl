@@ -44,8 +44,8 @@ function doreweighting(
     tolx               :: Real = 0.000001,
     tolf               :: Real = 0.000001 ) :: Buffer
 
-    nrows = size( data )[1]
-    ncols = size( data )[2]
+    nrows, ncols = size( data )
+    # ncols = size( data )[2]
     @assert ncols == size( target_populations )[1]
     @assert nrows == size( initial_weights )[1]
     a = target_populations - (initial_weights'*data)'
@@ -60,7 +60,7 @@ function doreweighting(
     # This version is in the 'fj' form needed for the NLsolve package if we want to
     # generate the derivative and hessian in one go, as we do since it's a potentially huge loop
     #
-    function compute_lamdas_and_hessian( lamdas :: Vector ) :: Tuple{Vector,Matrix}
+    function compute_lamdas_and_hessian( lamdas :: Vector ) :: Tuple{Array{Float64},Array{Float64}}
         gradient = zeros( Float64, ncols, 1 )
         hessian = zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
@@ -107,29 +107,28 @@ function doreweighting(
         end # obs loop
         gradient = a - z
         println( "gradient $gradient")
+        println( "lamdas $lamdas" )
+        # println( "hessian $hessian" )
         return ( gradient, hessian )
     end # nested function
 
-    initial_lamdas = ones( ncols )
-    lamdas = copy( initial_lamdas )
-    objective = only_fj( f_and_j ) # this means: we're providing one function 'fj' which
+    initial_lamdas = zeros( ncols )
+    objective = only_fj( compute_lamdas_and_hessian ) # this means: we're providing one function 'fj' which
                                    # computes both the first derivatives value and the hessian
     rc = nlsolve(
         objective,
         initial_lamdas,
-        inplace        = false,
+        inplace        = false )
         # method         = :newton,
         # autoscale      = true,
-        extended_trace = true )
+        # extended_trace = true )
         # xtol           = tolx,
         # ftol           = tolf )
-    print( rc )
-
     new_weights = copy(initial_weights)
+    lamdas = ( rc.zero )
+
     # construct the new weights from the lamdas
     if converged( rc )
-        lamdas = ( rc.zero )
-        println( "lamdas are $lamdas")
         for r in 1:nrows
             row = data[r,:]
             u = (row'*lamdas)[1]

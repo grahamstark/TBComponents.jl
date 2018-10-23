@@ -51,14 +51,16 @@ initial_weights = [
 
 
 
-nrows = size( data )[1]
-ncols = size( data )[2]
+nrows = size( data, 1 )
+ncols = size( data, 2 )
+sp = size( target_populations, 1 )
 
+println( "ncols $ncols nrows $nrows sp $sp")
 
 @testset "Reproduce the basic test case in Creedy NEW ZEALAND TREASURY WORKING PAPER 03/17" begin
 
-   @test ncols == size( target_populations )[1]
-   @test nrows == size( initial_weights )[1]
+   @test ncols == size( target_populations, 1 )
+   @test nrows == size( initial_weights, 1 )
 
    println( "target popns $target_populations" )
 
@@ -69,8 +71,8 @@ ncols = size( data )[2]
    println( "direct chi-square results $wchi")
    weighted_popn_chi = (wchi' * data)'
    @test weighted_popn_chi ≈ target_populations
-   lower_multiple = 0.60 # any smaller min and d_and_s_constrained fails on this dataset
-   upper_multiple = 1.3
+   lower_multiple = 0.2 # any smaller min and d_and_s_constrained fails on this dataset
+   upper_multiple = 2.0
    for method in instances( DistanceFunctionType )
       println( "on method $method")
       try
