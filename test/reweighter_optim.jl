@@ -60,9 +60,9 @@ function doreweighting(
     # This version is in the 'fj' form needed for the NLsolve package if we want to
     # generate the derivative and hessian in one go, as we do since it's a potentially huge loop
     #
-    function compute_lamdas_and_hessian( lamdas :: Vector ) :: Tuple{Array{Float64},Array{Float64}}
-        gradient = zeros( Float64, ncols, 1 )
-        hessian = zeros( Float64, ncols, ncols )
+    function compute_lamdas_and_hessian!( gradient :: Vector, hessian :: Matrix, lamdas :: Vector ) # :: Tuple{Array{Float64},Array{Float64}}
+        # gradient .= 0.0; #zeros( Float64, ncols, 1 )
+        hessian .= 0.0 #zeros( Float64, ncols, ncols )
         z = zeros( Float64, ncols, 1 )
         for row in 1:nrows
             rv = data[row,:]
@@ -109,21 +109,25 @@ function doreweighting(
         println( "gradient $gradient")
         println( "lamdas $lamdas" )
         # println( "hessian $hessian" )
-        return ( gradient, hessian )
+        # return ( gradient, hessian )
     end # nested function
 
+    hessian = zeros( ncols, ncols )
+    gradient = zeros( ncols, 1 )
     initial_lamdas = zeros( ncols )
-    objective = only_fj( compute_lamdas_and_hessian ) # this means: we're providing one function 'fj' which
+    objective = only_fj!( compute_lamdas_and_hessian! ) # this means: we're providing one function 'fj' which
                                    # computes both the first derivatives value and the hessian
     rc = nlsolve(
         objective,
+        gradient,
+        hessian,
         initial_lamdas,
-        inplace        = false )
+        inplace        = false,
         # method         = :newton,
         # autoscale      = true,
         # extended_trace = true )
-        # xtol           = tolx,
-        # ftol           = tolf )
+        xtol           = tolx,
+        ftol           = tolf )
     new_weights = copy(initial_weights)
     lamdas = ( rc.zero )
 
