@@ -1,3 +1,9 @@
+#
+# DON'T USE THIS (OR FIX IT FOR ME..)
+# This is a broken version of reweighter that uses
+# julia's standard NLsolve package. I'll return to it when
+# I have a free day.
+#
 using NLsolve
 
 Buffer = Dict{Symbol,Any}
