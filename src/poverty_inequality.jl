@@ -287,7 +287,7 @@ function binify(
     rawdata   :: AbstractArray{<:Real, 2},
     numbins   :: Integer,
     weightpos :: Integer = 1,
-    incomepos :: Integer = 2 ) :: AbstractArray{<:Real, 1}
+    incomepos :: Integer = 2 ) :: AbstractArray{<:Real, 2}
     data = makeaugmented( rawdata, weightpos, incomepos )
     nrows = size( data )[1]
     ncols = size( data )[2]
