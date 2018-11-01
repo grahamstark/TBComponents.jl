@@ -59,7 +59,7 @@ into chunks of cumulative income and population suitable for drawing [Lorenz Cur
 
 ## TODO
 
-* more inequality measures: Palma
+* more inequality measures: [Palma](https://www.cgdev.org/blog/palma-vs-gini-measuring-post-2015-inequality) - though that's easy from binify(a,10)
 * sub-components of decomposable indexes;
 * better understand how Julia does generics
 * ..
