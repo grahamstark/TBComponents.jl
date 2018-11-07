@@ -244,3 +244,13 @@ function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetCo
     end
     bc;
 end
+
+function pointstoarray( bc :: BudgetConstraint ) :: Array{Float64,2}
+    sz = size( bc, 1 )
+    pts = zeros( Float64, sz, 2 )
+    for b in 1:sz
+        pts[b,1] = bc[b].x
+        pts[b,2] = bc[b].y
+    end
+    pts
+end
