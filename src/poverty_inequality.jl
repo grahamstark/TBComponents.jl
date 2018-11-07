@@ -230,6 +230,8 @@ function makeinequality(
     total_income = data[nrows,INCOME_ACCUM]
     total_population = data[nrows,POPN_ACCUM]
     y_bar = total_income/total_population
+    bottom40pc = 0.0
+    top10pc = 0.0
     for row in 1:nrows
         income = data[row,INCOME]
         weight = data[row,WEIGHT]
@@ -253,11 +255,22 @@ function makeinequality(
                 alpha :: Float64 = iq[:generalised_entropy_alphas][i]
                 iq[:generalised_entropy][i] += weight*(y_yb^alpha)
             end # entropies
+            # Palma
+            if( data[row,POPN_ACCUM] >= 0.4 ) && (bottom40pc == 0.0 )
+                bottom40pc = data[row,INCOME_ACCUM]
+            end
+            if( data[row,POPN_ACCUM] >= 0.9 ) && (top10pc == 0.0 )
+                top10pc = 1.0 - data[row,INCOME_ACCUM]
+            end
 
         else
             iq[:negative_or_zero_income_count] += 1
         end # positive income
     end # main loop
+
+    iq[:palma] = top10pc/bottom40pc
+    iq[:top10pc] = 100.0*top10pc
+    iq[:bottom40pc] = 100.0*bottom40pc
     iq[:hoover] /= 2.0*total_income
     for i in 1:neps
         alpha :: Float64 = iq[:generalised_entropy_alphas][i]
@@ -274,6 +287,8 @@ function makeinequality(
         end # e = 1
     end
     iq[:theil] ./= total_population
+
+
     return iq
 end # makeinequality
 
