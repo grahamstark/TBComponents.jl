@@ -1,7 +1,9 @@
 # using TBComponents
 using Printf
 using Test
+using DataFrames
 
+include( "../src/common_types.jl" )
 include( "../src/taxcalcs.jl" )
 include( "../src/reweighter.jl" )
 include( "../src/poverty_inequality.jl" )

@@ -4,7 +4,9 @@ General Purpose stuff for tax simulation models
 module TBComponents
 
 using Printf
+using DataFrames
 
+export ArrayOrFrame;
 # inequality stuff
 export makegini, makepoverty, makeinequality, binify
 export DEFAULT_ATKINSON_ES,DEFAULT_ENTROPIES, DEFAULT_FGT_ALPHAS
@@ -20,6 +22,7 @@ export calctaxdue, TaxResult
 export makebc,BCSettings,DEFAULT_SETTINGS
 export Point2DG,Point2D,BudgetConstraint
 
+include( "common_types.jl" )
 include( "poverty_inequality.jl" )
 include( "reweighter.jl" )
 include( "taxcalcs.jl" )
