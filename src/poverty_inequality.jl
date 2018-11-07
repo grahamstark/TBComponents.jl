@@ -256,11 +256,11 @@ function makeinequality(
                 iq[:generalised_entropy][i] += weight*(y_yb^alpha)
             end # entropies
             # Palma
-            if( data[row,POPN_ACCUM] >= 0.4 ) && (bottom40pc == 0.0 )
-                bottom40pc = data[row,INCOME_ACCUM]
+            if(( data[row,POPN_ACCUM]/total_population >= 0.4 )) && (bottom40pc == 0.0 )
+                bottom40pc = data[row,INCOME_ACCUM]/total_income
             end
-            if( data[row,POPN_ACCUM] >= 0.9 ) && (top10pc == 0.0 )
-                top10pc = 1.0 - data[row,INCOME_ACCUM]
+            if(( data[row,POPN_ACCUM]/total_population) >= 0.9 ) && (top10pc == 0.0 )
+                top10pc = 1.0 - (data[row,INCOME_ACCUM]/total_income)
             end
 
         else
