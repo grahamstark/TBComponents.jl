@@ -269,7 +269,7 @@ function makeinequality(
             iq[:negative_or_zero_income_count] += 1
         end # positive income
     end # main loop
-
+    # top 10/bottom 40
     iq[:palma] = (1-deciles[9])/deciles[4]
     iq[:deciles] = deciles
     iq[:hoover] /= 2.0*total_income
