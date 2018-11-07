@@ -174,7 +174,7 @@ function doreweighting(
         #
         new_weights[r] = initial_weights[r]*g_m1
     end
-    if method in [constrained_chi_square, d_and_s_constrained ]
+    if functiontype in [constrained_chi_square, d_and_s_constrained ]
      # check the constrainted methods keep things inside ll and ul
         for r in 1:nrows
             @assert new_weights[r] <= initial_weights[r]*upper_multiple

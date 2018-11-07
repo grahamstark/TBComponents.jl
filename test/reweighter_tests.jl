@@ -73,30 +73,30 @@ println( "ncols $ncols nrows $nrows sp $sp")
    @test weighted_popn_chi ≈ target_populations
    lower_multiple = 0.20 # any smaller min and d_and_s_constrained fails on this dataset
    upper_multiple = 2.19
-   for method in instances( DistanceFunctionType )
-      println( "on method $method")
+   for m in instances( DistanceFunctionType )
+      println( "on method $m")
       try
          rw = doreweighting(
                data               = data,
                initial_weights    = initial_weights,
                target_populations = target_populations,
-               functiontype       = method,
+               functiontype       = m,
                lower_multiple     = lower_multiple,
                upper_multiple     = upper_multiple,
                tolx               = 0.000001,
                tolf               = 0.000001 )
-         println( "results for method $method = $rw" )
+         println( "results for method $m = $rw" )
          weights = rw[:weights]
          weighted_popn = (weights' * data)'
          @test weighted_popn ≈ target_populations
-         if method != chi_square
+         if m != chi_square
             for w in weights # check: what's the 1-liner for this?
                @test w > 0.0
             end
          else
             @test weights ≈ wchi # chisq the direct way should match chisq the iterative way
          end
-         if method in [constrained_chi_square, d_and_s_constrained ]
+         if m in [constrained_chi_square, d_and_s_constrained ]
             # check the constrainted methods keep things inside ll and ul
             for r in 1:nrows
                @test weights[r] <= initial_weights[r]*upper_multiple
@@ -105,7 +105,8 @@ println( "ncols $ncols nrows $nrows sp $sp")
          end
       catch e
          println( "method raised exception $e" )
-         @test false
+         stacktrace()
+         # @test 1==2
       end
    end # meth loop
 end # creedy testset
