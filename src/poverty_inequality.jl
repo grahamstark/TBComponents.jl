@@ -296,7 +296,8 @@ end # makeinequality
 Chop a dataset with populations and incomes
 into numbins groups in a form suitable for
 e.g. a Gini curve col1 is cumulative population and 2 cumulative
-income/whatever
+income/whatever. Inserts a 0,0 so points is 1 more than
+numbins.
 "
 function binify(
     rawdata   :: ArrayOrFrame,
@@ -306,11 +307,11 @@ function binify(
     data = makeaugmented( rawdata, weightpos, incomepos )
     nrows = size( data )[1]
     ncols = size( data )[2]
-    out = zeros( Float64, numbins, 2 )
+    out = zeros( Float64, numbins+1, 2 )
     population = data[ nrows, POPN_ACCUM ]
     total_income = data[ nrows, INCOME_ACCUM ]
     bin_size :: Float64 = population/numbins
-    bno = 0
+    bno = 1
     thresh = bin_size
     for row in 1:nrows
         if data[row,POPN_ACCUM] >= thresh
