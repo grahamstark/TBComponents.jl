@@ -8,6 +8,10 @@ const DEFAULT_FGT_ALPHAS = [ 0.0, 0.50, 1.0, 1.50, 2.0, 2.5 ];
 const DEFAULT_ATKINSON_ES = [ 0.25, 0.50, 0.75, 1.0, 1.25, 1.50, 1.75, 2.0, 2.25 ];
 const DEFAULT_ENTROPIES = [ 1.25, 1.50, 1.75, 2.0, 2.25, 2.5 ];
 
+const OutputDict = Dict{ Symbol, Any }
+const OutputDictArray = Array{ OutputDict, 1 }
+
+
 "
 internal function that makes a sorted array
 with cumulative income and population added
@@ -98,7 +102,7 @@ function makepoverty(
     growth                        :: Real = 0.0,
     foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,
     weightpos                     :: Integer = 1,
-    incomepos                     :: Integer = 2 ) :: Dict{ Symbol, Any }
+    incomepos                     :: Integer = 2 ) :: OutputDict
     # start_t = time_ns()
     data = makeaugmented( rawdata, weightpos, incomepos )
 
@@ -151,7 +155,7 @@ function makepoverty(
     #
     # Gini of poverty gaps; see: WB pp 74-5
     #
-    shorr_start_t = time_ns()
+    # shorr_start_t = time_ns()
     # create a 'Gini of the Gaps'
     # the sort routine in makeaugmented does a really
     # bad job here either because the data
@@ -196,6 +200,49 @@ function makepoverty(
 end # makepoverty
 
 "
+Add entries :theil_between and :theil_within to a dict of inequality indexes
+See WB eqns 6.7/6.8.
+TODO
+1. there are some papers on decomposing Atkinson, but I
+don't understand them ..
+2. the over time 3-part version
+
+
+ popindic : Inequal for the population as a whole
+ subindices : an array of dics, one for each subgroup of interest
+
+"
+function adddecomposedtheil!( popindic :: OutputDict, subindices :: OutputDictArray )
+    popn = popindex[:total_population]
+    income = popindex[:total_income]
+    avinc = popindex[:average_income]
+    within = zeros(2)
+    between = zeros(2)
+    totalpop = 0.0
+    totalinc = 0.0
+    for ind in subindices
+        popshare = ind[:total_population]/popn
+        incshare = ind[:total_income]/income
+        totalpop += popshare
+        totalinc += incshare
+
+        within[1] += ind[:theil][1]*popshare
+        between[1] += popshare*log(popindex[:average_income]/avinc)
+
+        within[2] += ind[:theil][2]*incshare
+        between[2] += incshare*log(incshare/popshare)
+
+    end
+    @assert totalpop ≈ 1.0
+    @assert totalinc ≈ 1.0
+    @assert within[1]+between[1] ≈ ind[:theil][1]
+    @assert within[2]+between[2] ≈ ind[:theil][2]
+
+    popindic[:theil_between] = between
+    popindic[:theil_within] = within
+end
+
+"
 Make a dictionary of inequality measures.
 This is mainly taken from chs 5 and 6 of the World Bank book.
 
@@ -210,12 +257,12 @@ function makeinequality(
     atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
     generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES,
     weightpos                  :: Integer = 1,
-    incomepos :: Integer = 2 ) :: Dict{ Symbol, Any }
+    incomepos :: Integer = 2 ) :: OutputDict
     data = makeaugmented( rawdata, weightpos, incomepos )
     nrows = size( data )[1]
     nats = size( atkinson_es )[1]
     neps = size( generalised_entropy_alphas )[1]
-    iq = Dict{ Symbol, Any }()
+    iq = OutputDict()
     # initialise atkinsons; 1 for e = 1 0 otherwise
     iq[:atkinson_es] = atkinson_es
     iq[:atkinson] = zeros( Float64, nats )
@@ -230,6 +277,9 @@ function makeinequality(
     total_income = data[nrows,INCOME_ACCUM]
     total_population = data[nrows,POPN_ACCUM]
     y_bar = total_income/total_population
+    iq[:total_income] = total_income
+    iq[:total_population] = total_population
+    iq[:average_income] = y_bar
     bottom40pc = 0.0
     top10pc = 0.0
     deciles = zeros( 10, 1 )

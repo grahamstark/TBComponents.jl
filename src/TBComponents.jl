@@ -8,8 +8,10 @@ using DataFrames
 
 export ArrayOrFrame;
 # inequality stuff
-export makegini, makepoverty, makeinequality, binify
+export OutputDict, OutputDictArray
+
 export DEFAULT_ATKINSON_ES,DEFAULT_ENTROPIES, DEFAULT_FGT_ALPHAS
+export makegini, makepoverty, makeinequality, binify, adddecomposedtheil!
 
 # reweighting
 export DistanceFunctionType, doreweighting, dochisquarereweighting
@@ -19,8 +21,8 @@ export calc_indirect, IndirResult
 export calctaxdue, TaxResult
 
 # budget constraint stuff
-export makebc,BCSettings,DEFAULT_SETTINGS
-export Point2DG,Point2D,BudgetConstraint
+export Point2DG, Point2D, BudgetConstraint, BCSettings, DEFAULT_SETTINGS,
+export makebc, pointstoarray
 
 include( "common_types.jl" )
 include( "poverty_inequality.jl" )
