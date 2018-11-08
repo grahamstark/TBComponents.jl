@@ -7,18 +7,19 @@ using Printf
 using DataFrames
 
 export ArrayOrFrame;
+
 # inequality stuff
 export OutputDict, OutputDictArray
-
 export DEFAULT_ATKINSON_ES,DEFAULT_ENTROPIES, DEFAULT_FGT_ALPHAS
 export makegini, makepoverty, makeinequality, binify, adddecomposedtheil!
 
 # reweighting
-export DistanceFunctionType, doreweighting, dochisquarereweighting
+export DistanceFunctionType
+export doreweighting, dochisquarereweighting
 
 # general tax routines
-export calc_indirect, IndirResult
-export calctaxdue, TaxResult
+export TaxResult
+export calctaxdue, calc_indirect, IndirResult
 
 # budget constraint stuff
 export Point2DG, Point2D, BudgetConstraint, BCSettings, DEFAULT_SETTINGS,
