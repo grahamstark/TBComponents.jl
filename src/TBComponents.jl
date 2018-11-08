@@ -10,7 +10,7 @@ export ArrayOrFrame;
 
 # inequality stuff
 export OutputDict, OutputDictArray
-export DEFAULT_ATKINSON_ES,DEFAULT_ENTROPIES, DEFAULT_FGT_ALPHAS
+export DEFAULT_ATKINSON_ES, DEFAULT_ENTROPIES, DEFAULT_FGT_ALPHAS
 export makegini, makepoverty, makeinequality, binify, adddecomposedtheil!
 
 # reweighting
@@ -22,7 +22,7 @@ export TaxResult
 export calctaxdue, calc_indirect, IndirResult
 
 # budget constraint stuff
-export Point2DG, Point2D, BudgetConstraint, BCSettings, DEFAULT_SETTINGS,
+export Point2DG, Point2D, BudgetConstraint, BCSettings, DEFAULT_SETTINGS
 export makebc, pointstoarray
 
 include( "common_types.jl" )
