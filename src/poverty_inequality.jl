@@ -213,9 +213,9 @@ don't understand them ..
 
 "
 function adddecomposedtheil!( popindic :: OutputDict, subindices :: OutputDictArray )
-    popn = popindex[:total_population]
-    income = popindex[:total_income]
-    avinc = popindex[:average_income]
+    popn = popindic[:total_population]
+    income = popindic[:total_income]
+    avinc = popindic[:average_income]
     within = zeros(2)
     between = zeros(2)
     totalpop = 0.0
@@ -227,7 +227,7 @@ function adddecomposedtheil!( popindic :: OutputDict, subindices :: OutputDictAr
         totalinc += incshare
 
         within[1] += ind[:theil][1]*popshare
-        between[1] += popshare*log(popindex[:average_income]/avinc)
+        between[1] += popshare*log(popindic[:average_income]/avinc)
 
         within[2] += ind[:theil][2]*incshare
         between[2] += incshare*log(incshare/popshare)
