@@ -200,17 +200,15 @@ function makepoverty(
 end # makepoverty
 
 "
-Make a wee dict with :theil_between and :theil_within to a dict of inequality indexes
+Make a wee dict with :theil_between and :theil_within
 See WB eqns 6.7/6.8.
 TODO
 1. there are some papers on decomposing Atkinson, but I
 don't understand them ..
 2. the over time 3-part version
 
-
  popindic : Inequal for the population as a whole
  subindices : an array of dics, one for each subgroup of interest
-
 "
 function adddecomposedtheil( popindic :: OutputDict, subindices :: OutputDictArray ) :: OutputDict
     popn = popindic[:total_population]
@@ -225,7 +223,7 @@ function adddecomposedtheil( popindic :: OutputDict, subindices :: OutputDictArr
         incshare = ind[:total_income]/income
         totalpop += popshare
         totalinc += incshare
-        # println( "popshare $popshare incshare $incshare avinc $avinc")
+        
         within[1] += ind[:theil][1]*popshare
         between[1] += popshare*log(avinc/ind[:average_income])
 
@@ -235,11 +233,7 @@ function adddecomposedtheil( popindic :: OutputDict, subindices :: OutputDictArr
     end
     overall1 = popindic[:theil][1]
     overall2 = popindic[:theil][2]
-    #println( "0:: overall $overall1")
-    #println( "0:: between=$between within=$within")
-    #println( "1:: overall $overall2")
-    #println( "1:: between=$between within=$within")
-
+    
     @assert totalpop ≈ 1.0
     @assert totalinc ≈ 1.0
     @assert within[1]+between[1] ≈ popindic[:theil][1]
