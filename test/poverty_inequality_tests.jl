@@ -131,7 +131,6 @@ end
     @test isapprox( country_c_pov[:time_to_exit ], 1.7548846, atol = TOL )
     @test isapprox( country_c_pov[:gini_amongst_poor ], 0.0238095, atol = TOL )
     @test isapprox( country_c_pov[:poverty_gap_gini ], 0.5625000, atol = TOL )
-
 end # poverty testset
 
 #

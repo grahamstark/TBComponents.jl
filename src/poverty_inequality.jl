@@ -33,18 +33,23 @@ with cumulative income and population added
 "
 function makeaugmented(
     data,
-    weightpos :: Symbol,
-    incomepos :: Symbol,
+    weightcol :: Symbol,
+    incomecol :: Symbol,
     sortdata  :: Bool = true ) :: Array{Float64,2}
-    @assert isiterabletable( data ) "data needs to implement IterableTables"
+    @assert isiterable( data ) "data needs to implement IterableTables"
     iter = IteratorInterfaceExtensions.getiterator(data)
     nrows = length(iter)
     aug = zeros( nrows, 5 )
+    r = 0
     for row in iter
-            aug[row,WEIGHT] = row[weightpos]
-            aug[row,INCOME] = row[incomepos]
-            aug[row,WEIGHTED_INCOME] = row[incomepos]*row[weightpos]
+        if ( ! ismissing( row[weightcol])) && ( ! ismissing( row[incomecol]))
+            r += 1
+            aug[r,WEIGHT] = Float64(row[weightcol].value)
+            aug[r,INCOME] = Float64(row[incomecol].value)
+            aug[r,WEIGHTED_INCOME] = aug[r,WEIGHT]*aug[r,INCOME]
+        end # not missing
     end
+    aug = aug[1:r,:]
     aug = sortAndAccumulate( aug, sortdata, nrows )
     return aug
 end
@@ -152,7 +157,7 @@ function makepoverty(
     incomecol                     :: Symbol,
     foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,
      ) :: OutputDict
-    @assert isiterabletable( rawdata ) "data needs to implement IterableTables"
+    @assert isiterable( rawdata ) "data needs to implement IterableTables"
     data = makeaugmented( rawdata, weightcol, incomecol )
     makepovertyinternal(
         data = data,
@@ -365,6 +370,7 @@ function makeinequalityinternal(
     bottom40pc = 0.0
     top10pc = 0.0
     deciles = zeros( 10, 1 )
+    popsharelast = 0.0
     for row in 1:nrows
         income = data[row,INCOME]
         weight = data[row,WEIGHT]
@@ -390,6 +396,10 @@ function makeinequalityinternal(
             end # entropies
             # Palma
             popshare = data[row,POPN_ACCUM]/total_population
+            if( popsharelast < 0.5 ) && ( popshare > 0.5 )
+                iq[:median] = income
+            end
+            popsharelast = popshare
             target = 0.0
             for i in 1:10
                 target+= 0.1
@@ -397,6 +407,7 @@ function makeinequalityinternal(
                     deciles[i]=data[row,INCOME_ACCUM]/total_income
                 end
             end # decile finder
+
         else
             iq[:negative_or_zero_income_count] += 1
         end # positive income
@@ -447,7 +458,7 @@ function binify(
     numbins   :: Integer,
     weightcol :: Symbol,
     incomecol :: Symbol ) :: AbstractArray{<:Real, 2}
-    @assert isiterabletable( rawdata ) "data needs to implement IterableTables"
+    @assert isiterable( rawdata ) "data needs to implement IterableTables"
     data = makeaugmented( rawdata, weightcol, incomecol )
     return binifyinternal( data, numbins )
 end
