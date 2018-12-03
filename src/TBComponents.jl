@@ -4,14 +4,13 @@ General Purpose stuff for tax simulation models
 module TBComponents
 
 using Printf
-using DataFrames
-
-export ArrayOrFrame;
+using IterableTables
+using IteratorInterfaceExtensions
 
 # inequality stuff
 export OutputDict, OutputDictArray
 export DEFAULT_ATKINSON_ES, DEFAULT_ENTROPIES, DEFAULT_FGT_ALPHAS
-export makegini, makepoverty, makeinequality, binify, adddecomposedtheil!
+export makegini, makepoverty, makeinequality, binify, adddecomposedtheil
 
 # reweighting
 export DistanceFunctionType

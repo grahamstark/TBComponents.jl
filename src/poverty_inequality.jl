@@ -11,25 +11,7 @@ const DEFAULT_ENTROPIES = [ 1.25, 1.50, 1.75, 2.0, 2.25, 2.5 ];
 const OutputDict = Dict{ Symbol, Any }
 const OutputDictArray = Array{ OutputDict, 1 }
 
-
-"
-internal function that makes a sorted array
-with cumulative income and population added
-"
-function makeaugmented(
-    data      :: ArrayOrFrame,
-    weightpos :: Integer = 1,
-    incomepos :: Integer = 2,
-    sortdata  :: Bool = true ) :: Array{Float64,2}
-
-    nrows = size( data )[1]
-    # print( nrows )
-    aug = zeros( nrows, 5 )
-    for row in 1:nrows
-            aug[row,WEIGHT] = data[row,weightpos]
-            aug[row,INCOME] = data[row,incomepos]
-            aug[row,WEIGHTED_INCOME] = data[row,incomepos]*data[row,weightpos]
-    end
+function sortAndAccumulate( aug :: Array{<:Real,2}, sortdata :: Bool, nrows :: Integer ) :: Array{<:Real,2}
     if sortdata
         aug = sortslices( aug, alg=QuickSort, dims=1,lt=((x,y)->isless(x[INCOME],y[INCOME])))
     end
@@ -41,6 +23,50 @@ function makeaugmented(
             aug[row,POPN_ACCUM] = cumulative_weight
             aug[row,INCOME_ACCUM] = cumulative_income
     end
+    return aug
+end # sortAndAccumulate
+
+
+"
+internal function that makes a sorted array
+with cumulative income and population added
+"
+function makeaugmented(
+    data,
+    weightpos :: Symbol,
+    incomepos :: Symbol,
+    sortdata  :: Bool = true ) :: Array{Float64,2}
+    @assert isiterabletable( data ) "data needs to implement IterableTables"
+    iter = IteratorInterfaceExtensions.getiterator(data)
+    nrows = length(iter)
+    aug = zeros( nrows, 5 )
+    for row in iter
+            aug[row,WEIGHT] = row[weightpos]
+            aug[row,INCOME] = row[incomepos]
+            aug[row,WEIGHTED_INCOME] = row[incomepos]*row[weightpos]
+    end
+    aug = sortAndAccumulate( aug, sortdata, nrows )
+    return aug
+end
+
+"
+internal function that makes a sorted array
+with cumulative income and population added
+"
+function makeaugmented(
+    data      :: Array{<:Real,2},
+    weightpos :: Integer = 1,
+    incomepos :: Integer = 2,
+    sortdata  :: Bool = true ) :: Array{Float64,2}
+
+    nrows = size( data )[1]
+    aug = zeros( nrows, 5 )
+    for row in 1:nrows
+            aug[row,WEIGHT] = data[row,weightpos]
+            aug[row,INCOME] = data[row,incomepos]
+            aug[row,WEIGHTED_INCOME] = data[row,incomepos]*data[row,weightpos]
+    end
+    aug = sortAndAccumulate( aug, sortdata, nrows )
     return aug
 end
 
@@ -66,7 +92,7 @@ generate a subset of one of our datasets with just the elements whose incomes
 are below the line. Probably possible in 1 line, once I get the hang of this
 a bit more.
 "
-function makeallbelowline( data :: ArrayOrFrame, line :: Float64 ) :: Array{Float64, 2 }
+function makeallbelowline( data :: Array{Float64, 2}, line :: Float64 ) :: Array{Float64, 2 }
     nrows = size( data )[1]
     ncols = size( data )[2]
     outa = zeros( Float64, nrows, ncols ) # Array{Float64}( undef, 0, 5 )
@@ -81,6 +107,7 @@ function makeallbelowline( data :: ArrayOrFrame, line :: Float64 ) :: Array{Floa
     return outa[1:nout,:]
 end
 
+
 "
 Create a dictionary of poverty measures.
 
@@ -88,23 +115,62 @@ This is based on the [World Bank's Poverty Handbook](http://documents.worldbank.
 by  Haughton and Khandker.
 
 Arguments:
-* `rawdata` - each row is an observation; one col should be a weight, another is income;
-positions assumed to be 1 and 2 unless weight and incomepos are supplied
-* `line` - a poverty line, assumed same for all obs
+* `rawdata` - an nxm array of real nunbers; each row is an observation; one col should be a weight, another is income;
+   positions assumed to be 1 and 2 unless weight and incomepos are supplied
+* `line` - a poverty line, assumed same for all obs (so income is assumed to be already equivalised)
 * `foster_greer_thorndyke_alphas` - coefficients for FGT poverty measures; note that FGT(0)
-corresponds to headcount and FGT(1) to gap; count and gap are computed directly anyway
-but it's worth checking one against the other.
+   corresponds to headcount and FGT(1) to gap; count and gap are computed directly anyway
+   but it's worth checking one against the other.
 * `growth` is (e.g.) 0.01 for 1% per period, and is used for 'time to exit' measure.
 "
 function makepoverty(
-    rawdata                       :: ArrayOrFrame,
+    rawdata                       :: Array{<:Real, 2},
+    line                          :: Real,
+    growth                        :: Real,
+    weightpos                     :: Integer = 1,
+    incomepos                     :: Integer = 2,
+    foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS ) :: OutputDict
+
+    data = makeaugmented( rawdata, weightpos, incomepos )
+    makepovertyinternal(
+        data = data,
+        line = line,
+        growth = growth,
+        foster_greer_thorndyke_alphas = foster_greer_thorndyke_alphas )
+end
+
+"
+As above, but using the QueryVerse IterableTables interface
+rawdata - basically anything resembling a dataframe; see: [https://github.com/queryverse/IterableTables.jl]
+throws an exception if rawdata doesn't support iterabletable interface
+"
+function makepoverty(
+    rawdata,
+    line                          :: Real,
+    growth                        :: Real,
+    weightcol                     :: Symbol,
+    incomecol                     :: Symbol,
+    foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,
+     ) :: OutputDict
+    @assert isiterabletable( rawdata ) "data needs to implement IterableTables"
+    data = makeaugmented( rawdata, weightcol, incomecol )
+    makepovertyinternal(
+        data = data,
+        line = line,
+        growth = growth,
+        foster_greer_thorndyke_alphas = foster_greer_thorndyke_alphas )
+end
+
+
+"
+Internal version, once we have our datatset
+"
+function makepovertyinternal(
+    ;
+    data                          :: Array{Float64, 2},
     line                          :: Real,
     growth                        :: Real = 0.0,
-    foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,
-    weightpos                     :: Integer = 1,
-    incomepos                     :: Integer = 2 ) :: OutputDict
-    
-    data = makeaugmented( rawdata, weightpos, incomepos )
+    foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,) :: OutputDict
 
     pv = Dict{ Symbol, Any}()
     nrows = size( data )[1]
@@ -196,7 +262,7 @@ function adddecomposedtheil( popindic :: OutputDict, subindices :: OutputDictArr
         incshare = ind[:total_income]/income
         totalpop += popshare
         totalinc += incshare
-        
+
         within[1] += ind[:theil][1]*popshare
         between[1] += popshare*log(avinc/ind[:average_income])
 
@@ -206,7 +272,7 @@ function adddecomposedtheil( popindic :: OutputDict, subindices :: OutputDictArr
     end
     overall1 = popindic[:theil][1]
     overall2 = popindic[:theil][2]
-    
+
     @assert totalpop ≈ 1.0
     @assert totalinc ≈ 1.0
     @assert within[1]+between[1] ≈ popindic[:theil][1]
@@ -228,12 +294,53 @@ This is mainly taken from chs 5 and 6 of the World Bank book.
 5. `incomepos` - column with incomes
 "
 function makeinequality(
-    rawdata                    :: ArrayOrFrame,
-    atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
-    generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES,
+    rawdata                    :: Array{<:Real, 2 },
     weightpos                  :: Integer = 1,
-    incomepos :: Integer = 2 ) :: OutputDict
+    incomepos                  :: Integer = 2,
+    atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
+    generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES ) :: OutputDict
     data = makeaugmented( rawdata, weightpos, incomepos )
+    return makeinequalityinternal(
+        data = data,
+        atkinson_es = atkinson_es,
+        generalised_entropy_alphas = generalised_entropy_alphas
+    )
+end
+
+"
+As above but using the iterable table interface; see: https://github.com/queryverse/IterableTables.jl
+weightcol and incomecol are names of columns
+"
+function makeinequality(
+    rawdata,
+    weightcol                  :: Symbol,
+    incomecol                  :: Symbol,
+    atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
+    generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES ) :: OutputDict
+    data = makeaugmented( rawdata, weightcol, incomecol )
+    return makeinequalityinternal(
+        data = data,
+        atkinson_es = atkinson_es,
+        generalised_entropy_alphas = generalised_entropy_alphas
+    )
+
+end
+
+"
+Make a dictionary of inequality measures.
+This is mainly taken from chs 5 and 6 of the World Bank book.
+
+1. `rawdata` a matrix with cols with weights and incomes
+2. `atkinson_es` inequality aversion values for the Atkinson indexes
+3. `generalised_entropy_alphas`
+4. `weightpos` - column with weights
+5. `incomepos` - column with incomes
+"
+function makeinequalityinternal(
+    ;
+    data                       :: Array{Float64, 2},
+    atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
+    generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES ) :: OutputDict
     nrows = size( data )[1]
     nats = size( atkinson_es )[1]
     neps = size( generalised_entropy_alphas )[1]
@@ -314,7 +421,8 @@ function makeinequality(
     end
     iq[:theil] ./= total_population
     return iq
-end # makeinequality
+end # makeinequalityinternal
+
 
 "
 Chop a dataset with populations and incomes
@@ -324,11 +432,29 @@ income/whatever. Inserts a 0,0 so points is 1 more than
 numbins.
 "
 function binify(
-    rawdata   :: ArrayOrFrame,
+    ;
+    rawdata   :: Array{<:Real, 2 },
     numbins   :: Integer,
     weightpos :: Integer = 1,
     incomepos :: Integer = 2 ) :: AbstractArray{<:Real, 2}
     data = makeaugmented( rawdata, weightpos, incomepos )
+    return binifyinternal( data, numbins )
+end
+
+function binify(
+    ;
+    rawdata   :: Array{<:Real, 2 },
+    numbins   :: Integer,
+    weightcol :: Symbol,
+    incomecol :: Symbol ) :: AbstractArray{<:Real, 2}
+    @assert isiterabletable( rawdata ) "data needs to implement IterableTables"
+    data = makeaugmented( rawdata, weightcol, incomecol )
+    return binifyinternal( data, numbins )
+end
+
+function binifyinternal(
+    data      :: Array{<:Real, 2 },
+    numbins   :: Integer ) :: AbstractArray{<:Real, 2}
     nrows = size( data )[1]
     ncols = size( data )[2]
     out = zeros( Float64, numbins+1, 2 )

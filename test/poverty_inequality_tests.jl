@@ -30,10 +30,23 @@ function vcn( a :: Array{Float64}, times :: Int64 )
     out
 end
 
+NONE=Array{Symbol,1}();
+
+function removeIgnored( d :: Dict{ Symbol, <:Any}, ignore::Array{Symbol,1} ):: Dict{ Symbol, <:Any}
+    for i in ignore
+        if haskey( d, i )
+            delete!( d, i )
+        end
+    end
+    return d;
+end
+
 "
 element - by element compare of the type of dicts we use for poverty and inequality output
 "
-function comparedics( left :: Dict{ Symbol, <:Any}, right :: Dict{ Symbol, <:Any} ) :: Bool
+function comparedics( left :: Dict{ Symbol, <:Any}, right :: Dict{ Symbol, <:Any}, ignore::Array{Symbol,1} = NONE ) :: Bool
+    left  = removeIgnored( left, ignore )
+    right = removeIgnored( right, ignore )
     lk = keys( left )
     if lk != keys( right )
         return false
@@ -42,6 +55,9 @@ function comparedics( left :: Dict{ Symbol, <:Any}, right :: Dict{ Symbol, <:Any
         # try catch here in case types are way off
         try
             if !( left[k] ≈ right[k] )
+                l = left[k]
+                r = right[k]
+                print( "comparing '$k' : left = $l right = $r")
                 return false
             end
        catch e
@@ -79,9 +95,11 @@ end
     line = 125.0
     growth = 0.05
 
+
+
     country_a_pov = makepoverty( country_a, line, growth )
     print("country A " );println( country_a_pov )
-    country_a_2_pov = makepoverty( country_a_2, line, growth )
+    country_a_2_pov = makepoverty( country_a_2, line,growth )
     country_b_pov = makepoverty( country_b, line, growth )
     country_c_pov = makepoverty( country_c, line, growth )
     print("country C " );println( country_c_pov )
@@ -125,7 +143,7 @@ end # poverty testset
 #
 @testset "WB Chapter 6 - Inequality " begin
     c1 = [1.0 10; 1 15; 1 20; 1 25; 1 40; 1 20; 1 30; 1 35; 1 45; 1 90 ]
-    # these next are copies of c1 indeded
+    # these next are copies of c1 intended
     # to check we haven't screwed up the weighting
     c2 = vcn( c1, 2 )
     c3 = copy( c1 )
@@ -143,15 +161,15 @@ end # poverty testset
     iq4 = makeinequality( c4 )
     iq64k = makeinequality( c64k )
     # weighting and multiplying should make no difference
-    @test comparedics( iq1, iq2 )
+    @test comparedics( iq1, iq2, [:total_income, :total_population, :deciles] )
     println( "iq1");println( iq1 )
     println( "iq2");println( iq2 )
     println( "iq3");println( iq3 )
     println( "iq64k");println( iq64k )
 
-    @test comparedics( iq1, iq3 )
-    @test comparedics( iq1, iq4 )
-    @test comparedics( iq1, iq64k )
+    @test comparedics( iq1, iq3, [:total_income, :total_population, :deciles] )
+    @test comparedics( iq1, iq4, [:total_income, :total_population, :deciles] )
+    @test comparedics( iq1, iq64k, [:total_income, :total_population, :deciles] )
     @test isapprox( iq1[:gini ], 0.3272727, atol = TOL )
     @test isapprox( iq1[:theil][1], 0.1792203, atol = TOL )
     @test isapprox( iq1[:theil][2],  0.1830644, atol = TOL )

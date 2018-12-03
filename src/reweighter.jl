@@ -34,7 +34,7 @@ note: chi-square is just there for checking purposes; use Do_Basic_Reweighting i
 "
 function doreweighting(
     ;
-    data               :: ArrayOrFrame,
+    data               :: AbstractArray{ <:Real, 2 },
     initial_weights    :: AbstractArray{ <:Real, 1 }, # a column
     target_populations :: AbstractArray{ <:Real, 1 }, # a row
     functiontype       :: DistanceFunctionType,
