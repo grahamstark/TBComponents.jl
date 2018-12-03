@@ -57,7 +57,7 @@ function comparedics( left :: Dict{ Symbol, <:Any}, right :: Dict{ Symbol, <:Any
             if !( left[k] ≈ right[k] )
                 l = left[k]
                 r = right[k]
-                print( "comparing '$k' : left = $l right = $r")
+                print( "comparison failed '$k' : left = $l right = $r")
                 return false
             end
        catch e
