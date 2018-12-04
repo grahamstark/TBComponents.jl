@@ -443,7 +443,6 @@ income/whatever. Inserts a 0,0 so points is 1 more than
 numbins.
 "
 function binify(
-    ;
     rawdata   :: Array{<:Real, 2 },
     numbins   :: Integer,
     weightpos :: Integer = 1,
@@ -452,9 +451,11 @@ function binify(
     return binifyinternal( data, numbins )
 end
 
+"
+As above, but using any DataFrame like thing that supports the isiterable interface
+"
 function binify(
-    ;
-    rawdata   :: Array{<:Real, 2 },
+    rawdata,
     numbins   :: Integer,
     weightcol :: Symbol,
     incomecol :: Symbol ) :: AbstractArray{<:Real, 2}
