@@ -372,6 +372,7 @@ function makeinequalityinternal(
     top10pc = 0.0
     deciles = zeros( 10, 1 )
     popsharelast = 0.0
+    incomelast = 0.0
     for row in 1:nrows
         income = data[row,INCOME]
         weight = data[row,WEIGHT]
@@ -397,10 +398,16 @@ function makeinequalityinternal(
             end # entropies
             # Palma
             popshare = data[row,POPN_ACCUM]/total_population
-            if( popsharelast < 0.5 ) && ( popshare > 0.5 )
+            if popshare ≈ 0.5
                 iq[:median] = income
+            elseif ( popsharelast < 0.5 ) && ( popshare > 0.5 )
+                pgap = popshare - popsharelast
+                p1 = (0.5 - popsharelast)
+                p2 = (popshare-0.5)
+                iq[:median] = ((income*p2)+(incomelast*p1))/pgap # linear weighted 
             end
             popsharelast = popshare
+            incomelast = income
             target = 0.0
             for i in 1:10
                 target+= 0.1
