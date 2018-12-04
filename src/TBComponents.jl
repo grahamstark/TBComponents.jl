@@ -6,6 +6,7 @@ module TBComponents
 using Printf
 using IterableTables
 using IteratorInterfaceExtensions
+using TableTraits
 
 # inequality stuff
 export OutputDict, OutputDictArray

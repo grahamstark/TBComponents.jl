@@ -36,7 +36,7 @@ function makeaugmented(
     weightcol :: Symbol,
     incomecol :: Symbol,
     sortdata  :: Bool = true ) :: Array{Float64,2}
-    @assert isiterable( data ) "data needs to implement IterableTables"
+    @assert TableTraits.isiterabletable( data ) "data needs to implement IterableTables"
     iter = IteratorInterfaceExtensions.getiterator(data)
     nrows = length(iter)
     aug = zeros( nrows, 5 )
@@ -157,7 +157,7 @@ function makepoverty(
     incomecol                     :: Symbol,
     foster_greer_thorndyke_alphas :: AbstractArray{<:Real, 1} = DEFAULT_FGT_ALPHAS,
      ) :: OutputDict
-    @assert isiterable( rawdata ) "data needs to implement IterableTables"
+    @assert TableTraits.isiterabletable( rawdata ) "data needs to implement IterableTables"
     data = makeaugmented( rawdata, weightcol, incomecol )
     makepovertyinternal(
         data = data,
@@ -322,7 +322,7 @@ function makeinequality(
     incomecol                  :: Symbol,
     atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
     generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES ) :: OutputDict
-    @assert isiterable( rawdata ) "data needs to implement IterableTables"
+    @assert TableTraits.isiterabletable( rawdata ) "data needs to implement IterableTables"
     data = makeaugmented( rawdata, weightcol, incomecol )
     return makeinequalityinternal(
         data = data,
@@ -348,6 +348,9 @@ function makeinequalityinternal(
     atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
     generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES ) :: OutputDict
     nrows = size( data )[1]
+    ncols = size( data )[2]
+    @assert ncols == 5 "data should have 5 cols"
+
     nats = size( atkinson_es )[1]
     neps = size( generalised_entropy_alphas )[1]
     iq = OutputDict()
@@ -372,6 +375,7 @@ function makeinequalityinternal(
     top10pc = 0.0
     deciles = zeros( 10, 1 )
     popsharelast = 0.0
+    incomelast = 0.0
     for row in 1:nrows
         income = data[row,INCOME]
         weight = data[row,WEIGHT]
@@ -397,10 +401,16 @@ function makeinequalityinternal(
             end # entropies
             # Palma
             popshare = data[row,POPN_ACCUM]/total_population
-            if( popsharelast < 0.5 ) && ( popshare > 0.5 )
+            if popshare ≈ 0.5
                 iq[:median] = income
+            elseif ( popsharelast < 0.5 ) && ( popshare > 0.5 )
+                pgap = popshare - popsharelast
+                p1 = (0.5 - popsharelast)
+                p2 = (popshare-0.5)
+                iq[:median] = ((income*p2)+(incomelast*p1))/pgap # linear weighted
             end
             popsharelast = popshare
+            incomelast = income
             target = 0.0
             for i in 1:10
                 target+= 0.1
@@ -453,14 +463,14 @@ function binify(
 end
 
 "
-As above, but using any DataFrame like thing that supports the isiterable interface
+As above, but using any DataFrame like thing that supports the TableTraits.isiterabletable interface
 "
 function binify(
     rawdata,
     numbins   :: Integer,
     weightcol :: Symbol,
     incomecol :: Symbol ) :: AbstractArray{<:Real, 2}
-    @assert isiterable( rawdata ) "data needs to implement IterableTables"
+    @assert TableTraits.isiterabletable( rawdata ) "data needs to implement IterableTables"
     data = makeaugmented( rawdata, weightcol, incomecol )
     return binifyinternal( data, numbins )
 end
