@@ -322,6 +322,7 @@ function makeinequality(
     incomecol                  :: Symbol,
     atkinson_es                :: AbstractArray{<:Real, 1} = DEFAULT_ATKINSON_ES,
     generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES ) :: OutputDict
+    @assert isiterable( rawdata ) "data needs to implement IterableTables"
     data = makeaugmented( rawdata, weightcol, incomecol )
     return makeinequalityinternal(
         data = data,
