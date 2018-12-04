@@ -180,12 +180,9 @@ function generate!(
     startpos :: Float64,
     endpos   :: Float64,
     settings :: BCSettings ) :: Integer
-    # println( "depth $depth")
     diff = abs( startpos - endpos )
     tolerance = settings.tolerance
-    # println( "diff=$diff tolerance=$tolerance " )
     if( diff < settings.tolerance )
-        # println( "going up after tol check.")
         return depth
     end
     if depth > settings.maxdepth
@@ -196,12 +193,8 @@ function generate!(
     p4 = Point2D( endpos, getnet(endpos) )
     p3 = Point2D( endpos-settings.increment, getnet(endpos-settings.increment) )
 
-    # println( "p1 $p1 p2 $p2 p3 $p3 p4 $p4")
-
     line1 = makeline( p1, p2 )
     line2 = makeline( p3, p4 )
-
-    # println( "line1 = $line1 line2 = $line2")
 
     if line1 ≈ line2
         push!( bc, p1 )
@@ -213,19 +206,14 @@ function generate!(
     else
         anchor = p5.x
     end
-    # println( "p5 = $p5 ")
     depth += 1
-    # println( "left from $startpos -> $anchor ")
-    # println( "right from $anchor -> $endpos ")
     #
     # expore to the left
     #
-    # println( "going left")
     depth = generate!( bc, getnet, depth, startpos, anchor, settings )
     #
     # then the right
     #
-    # println( "going right")
     depth = generate!( bc, getnet, depth, anchor, endpos, settings )
     return depth - 1
 end
