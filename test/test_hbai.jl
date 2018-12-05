@@ -25,11 +25,20 @@ print( ineq_2003_4 )
 print( "\n\n")
 
 
+print( "deciles\n")
 deciles = binify( hbai_2003_4, 10, :G_NEWPP,  :S_OE_AHC )
-print( "Deciles $deciles ")
+for i in 1:10
+    print( "$i = " );print( deciles[i,:]);print("\n")
+end
 
+print( "quintiles\n")
 quintiles = binify( hbai_2003_4, 20, :G_NEWPP,  :S_OE_AHC )
-print( "Quintiles $quintiles ")
+for i in 1:20
+    print( "$i = " );print( quintiles[i,:]);print("\n")
+end
 
+print( "percentiles\n")
 percentiles = binify( hbai_2003_4, 100, :G_NEWPP,  :S_OE_AHC )
-print( "Percentiles $percentiles ")
+for i in 1:100
+    print( "$i = " );print( percentiles[i,:]);print("\n")
+end
