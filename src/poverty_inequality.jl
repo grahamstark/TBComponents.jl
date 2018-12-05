@@ -35,22 +35,26 @@ function makeaugmented(
     data,
     weightcol :: Symbol,
     incomecol :: Symbol,
-    sortdata  :: Bool = true ) :: Array{Float64,2}
+    sortdata  :: Bool = true,
+    deletenegatives :: Bool = true ) :: Array{Float64,2}
     @assert TableTraits.isiterabletable( data ) "data needs to implement IterableTables"
     iter = IteratorInterfaceExtensions.getiterator(data)
     nrows = length(iter)
     aug = zeros( nrows, 5 )
     r = 0
     for row in iter
-        if ( ! ismissing( row[weightcol])) && ( ! ismissing( row[incomecol]))
+        if ( ismissing( row[weightcol])) || ( ismissing( row[incomecol])) ||
+            ( deletenegatives && row[incomecol].value < 0.0 )
+            ;
+        else
             r += 1
             aug[r,WEIGHT] = Float64(row[weightcol].value)
             aug[r,INCOME] = Float64(row[incomecol].value)
             aug[r,WEIGHTED_INCOME] = aug[r,WEIGHT]*aug[r,INCOME]
-        end # not missing
+        end # not missing or negative
     end
     aug = aug[1:r,:]
-    aug = sortAndAccumulate( aug, sortdata, nrows )
+    aug = sortAndAccumulate( aug, sortdata, r )
     return aug
 end
 
@@ -59,20 +63,27 @@ internal function that makes a sorted array
 with cumulative income and population added
 "
 function makeaugmented(
-    data      :: Array{<:Real,2},
-    weightpos :: Integer = 1,
-    incomepos :: Integer = 2,
-    sortdata  :: Bool = true ) :: Array{Float64,2}
+    data            :: Array{<:Real,2},
+    weightpos       :: Integer = 1,
+    incomepos       :: Integer = 2,
+    sortdata        :: Bool = true,
+    deletenegatives :: Bool = true ) :: Array{Float64,2}
 
     nrows = size( data )[1]
     aug = zeros( nrows, 5 )
+    r = 0
     for row in 1:nrows
-            aug[row,WEIGHT] = data[row,weightpos]
-            aug[row,INCOME] = data[row,incomepos]
-            aug[row,WEIGHTED_INCOME] = data[row,incomepos]*data[row,weightpos]
-    end
-    aug = sortAndAccumulate( aug, sortdata, nrows )
-    return aug
+        if( deletenegatives && data[row,incomepos] < 0.0 )
+            ;
+        else
+            r += 1
+            aug[r,WEIGHT] = data[row,weightpos]
+            aug[r,INCOME] = data[row,incomepos]
+            aug[r,WEIGHTED_INCOME] = data[row,incomepos]*data[row,weightpos]
+        end # not neg or negs accepted
+    end # row loop
+    aug = sortAndAccumulate( aug, sortdata, r )
+    return aug[1:r,:]
 end
 
 "
@@ -333,6 +344,109 @@ function makeinequality(
 end
 
 "
+Chop a dataset with populations and incomes
+into numbins groups in a form suitable for
+e.g. a Gini curve col1 is cumulative population and 2 cumulative
+income/whatever. Inserts a 0,0 so points is 1 more than
+numbins.
+"
+function binify(
+    rawdata   :: Array{<:Real, 2 },
+    numbins   :: Integer,
+    weightpos :: Integer = 1,
+    incomepos :: Integer = 2 ) :: AbstractArray{<:Real, 2}
+    data = makeaugmented( rawdata, weightpos, incomepos, true, true )
+    return binifyinternal( data, numbins )
+end
+
+"
+As above, but using any DataFrame like thing that supports the TableTraits.isiterabletable interface
+"
+function binify(
+    rawdata,
+    numbins   :: Integer,
+    weightcol :: Symbol,
+    incomecol :: Symbol ) :: AbstractArray{<:Real, 2}
+    @assert TableTraits.isiterabletable( rawdata ) "data needs to implement IterableTables"
+    data = makeaugmented( rawdata, weightcol, incomecol, true, true )
+    return binifyinternal( data, numbins )
+end
+
+function checkquantile( ;
+    threshold    :: Float64,
+    popshare     :: Float64,
+    income       :: Float64,
+    popsharelast :: Float64,
+    incomelast   :: Float64 ) :: NamedTuple
+    @assert income >= incomelast "incomes not in order: $income < $incomelast"
+    @assert popshare > popsharelast "popshare not increasing $popshare <= $popsharelast"
+    overthresh = false
+    sharenow = 0.0
+    sharelast = 0.0
+    outincome = 0.0
+    if popshare ≈ threshold
+        outincome = income
+        overthresh = true
+        popsharenow = 1.0
+        popsharelast = 0.0
+    elseif ( popsharelast < threshold ) && ( popshare > threshold )
+        pgap = popshare - popsharelast
+        sharenow = (threshold - popsharelast)/pgap
+        sharelast = (popshare-threshold)/pgap
+        @assert sharenow+sharelast ≈ 1.0
+        outincome = ((income*sharelast)+(incomelast*sharelast)) # linear weighted
+        overthresh = true
+    end
+    return ( sharelast = sharelast, sharenow = sharenow, outincome = outincome, overthresh=overthresh )
+end
+
+function binifyinternal(
+    data      :: Array{<:Real, 2 },
+    numbins   :: Integer ) :: AbstractArray{<:Real, 2}
+    nrows = size( data )[1]
+    ncols = size( data )[2]
+    out = zeros( Float64, numbins, 3 )
+    total_population = data[ nrows, POPN_ACCUM ]
+    total_income = data[ nrows, INCOME_ACCUM ]
+    bin_size :: Float64 = 1.0/numbins
+    bno = 0
+    thresh = bin_size
+    popsharelast = 0.0
+    incomelast = 0.0
+    incomeaccumlast = 0.0
+    incomeaccum = 0.0
+    print( "total_population $total_population total_income $total_income \n")
+    for row in 1:nrows
+        income = data[row,INCOME]
+        incomeaccum = data[row,INCOME_ACCUM]/total_income
+        popshare = data[row,POPN_ACCUM]/total_population
+        if popshare ≈ thresh
+            bno += 1
+            out[bno,1] = popshare
+            out[bno,2] = incomeaccum
+            out[bno,3] = income
+            print( "row $row popshare $popshare ≈ thresh $thresh incomeaccum $incomeaccum \n")
+            thresh += bin_size
+        elseif( popsharelast < thresh ) && ( popshare > thresh)
+            bno += 1
+            print( "row $row popsharelast $popsharelast thresh $thresh popshare $popshare\n" )
+            pgap = popshare - popsharelast
+            p1 = (thresh - popsharelast)
+            p2 = (popshare - thresh)
+            out[bno,1] = ((popshare*p2)+(popsharelast*p1))/pgap
+            out[bno,2] = ((incomeaccum*p2)+(incomeaccumlast*p1))/pgap
+            out[bno,3] = ((income*p2)+(incomelast*p1))/pgap
+            thresh += bin_size
+        end
+        popsharelast = popshare
+        incomelast = income
+        incomeaccumlast = incomeaccum
+    end
+    return out
+end
+
+
+"
 Make a dictionary of inequality measures.
 This is mainly taken from chs 5 and 6 of the World Bank book.
 
@@ -349,7 +463,7 @@ function makeinequalityinternal(
     generalised_entropy_alphas :: AbstractArray{<:Real, 1} = DEFAULT_ENTROPIES ) :: OutputDict
     nrows = size( data )[1]
     ncols = size( data )[2]
-    @assert ncols == 5 "data should have 5 cols"
+    @assert ncols == 5 "data should have 5 cols but has $ncols"
 
     nats = size( atkinson_es )[1]
     neps = size( generalised_entropy_alphas )[1]
@@ -371,8 +485,6 @@ function makeinequalityinternal(
     iq[:total_income] = total_income
     iq[:total_population] = total_population
     iq[:average_income] = y_bar
-    bottom40pc = 0.0
-    top10pc = 0.0
     deciles = zeros( 10, 1 )
     popsharelast = 0.0
     incomelast = 0.0
@@ -444,55 +556,3 @@ function makeinequalityinternal(
     iq[:theil] ./= total_population
     return iq
 end # makeinequalityinternal
-
-
-"
-Chop a dataset with populations and incomes
-into numbins groups in a form suitable for
-e.g. a Gini curve col1 is cumulative population and 2 cumulative
-income/whatever. Inserts a 0,0 so points is 1 more than
-numbins.
-"
-function binify(
-    rawdata   :: Array{<:Real, 2 },
-    numbins   :: Integer,
-    weightpos :: Integer = 1,
-    incomepos :: Integer = 2 ) :: AbstractArray{<:Real, 2}
-    data = makeaugmented( rawdata, weightpos, incomepos )
-    return binifyinternal( data, numbins )
-end
-
-"
-As above, but using any DataFrame like thing that supports the TableTraits.isiterabletable interface
-"
-function binify(
-    rawdata,
-    numbins   :: Integer,
-    weightcol :: Symbol,
-    incomecol :: Symbol ) :: AbstractArray{<:Real, 2}
-    @assert TableTraits.isiterabletable( rawdata ) "data needs to implement IterableTables"
-    data = makeaugmented( rawdata, weightcol, incomecol )
-    return binifyinternal( data, numbins )
-end
-
-function binifyinternal(
-    data      :: Array{<:Real, 2 },
-    numbins   :: Integer ) :: AbstractArray{<:Real, 2}
-    nrows = size( data )[1]
-    ncols = size( data )[2]
-    out = zeros( Float64, numbins+1, 2 )
-    population = data[ nrows, POPN_ACCUM ]
-    total_income = data[ nrows, INCOME_ACCUM ]
-    bin_size :: Float64 = population/numbins
-    bno = 1
-    thresh = bin_size
-    for row in 1:nrows
-        if data[row,POPN_ACCUM] >= thresh
-            bno += 1
-            out[bno,1] = data[row,POPN_ACCUM]/population
-            out[bno,2] = data[row,INCOME_ACCUM]/total_income
-            thresh += bin_size
-        end
-    end
-    return out
-end

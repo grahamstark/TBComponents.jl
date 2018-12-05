@@ -2,6 +2,7 @@
 using Printf
 using Test
 using IterableTables
+using TableTraits
 using IteratorInterfaceExtensions
 
 
