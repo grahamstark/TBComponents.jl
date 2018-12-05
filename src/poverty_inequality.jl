@@ -346,9 +346,10 @@ end
 "
 Chop a dataset with populations and incomes
 into numbins groups in a form suitable for
-e.g. a Gini curve col1 is cumulative population and 2 cumulative
-income/whatever. Inserts a 0,0 so points is 1 more than
-numbins.
+e.g. a Gini curve.
+* col1 is cumulative population,
+*    2 cumulative income/whatever,
+*    3 threshold income level. 
 "
 function binify(
     rawdata   :: Array{<:Real, 2 },
@@ -372,34 +373,6 @@ function binify(
     return binifyinternal( data, numbins )
 end
 
-function checkquantile( ;
-    threshold    :: Float64,
-    popshare     :: Float64,
-    income       :: Float64,
-    popsharelast :: Float64,
-    incomelast   :: Float64 ) :: NamedTuple
-    @assert income >= incomelast "incomes not in order: $income < $incomelast"
-    @assert popshare > popsharelast "popshare not increasing $popshare <= $popsharelast"
-    overthresh = false
-    sharenow = 0.0
-    sharelast = 0.0
-    outincome = 0.0
-    if popshare ≈ threshold
-        outincome = income
-        overthresh = true
-        popsharenow = 1.0
-        popsharelast = 0.0
-    elseif ( popsharelast < threshold ) && ( popshare > threshold )
-        pgap = popshare - popsharelast
-        sharenow = (threshold - popsharelast)/pgap
-        sharelast = (popshare-threshold)/pgap
-        @assert sharenow+sharelast ≈ 1.0
-        outincome = ((income*sharelast)+(incomelast*sharelast)) # linear weighted
-        overthresh = true
-    end
-    return ( sharelast = sharelast, sharenow = sharenow, outincome = outincome, overthresh=overthresh )
-end
-
 function binifyinternal(
     data      :: Array{<:Real, 2 },
     numbins   :: Integer ) :: AbstractArray{<:Real, 2}
@@ -415,7 +388,7 @@ function binifyinternal(
     incomelast = 0.0
     incomeaccumlast = 0.0
     incomeaccum = 0.0
-    print( "total_population $total_population total_income $total_income \n")
+    # print( "total_population $total_population total_income $total_income \n")
     for row in 1:nrows
         income = data[row,INCOME]
         incomeaccum = data[row,INCOME_ACCUM]/total_income
@@ -425,11 +398,11 @@ function binifyinternal(
             out[bno,1] = popshare
             out[bno,2] = incomeaccum
             out[bno,3] = income
-            print( "row $row popshare $popshare ≈ thresh $thresh incomeaccum $incomeaccum \n")
+            # print( "row $row popshare $popshare ≈ thresh $thresh incomeaccum $incomeaccum \n")
             thresh += bin_size
         elseif( popsharelast < thresh ) && ( popshare > thresh)
             bno += 1
-            print( "row $row popsharelast $popsharelast thresh $thresh popshare $popshare\n" )
+            # print( "row $row popsharelast $popsharelast thresh $thresh popshare $popshare\n" )
             pgap = popshare - popsharelast
             p1 = (thresh - popsharelast)
             p2 = (popshare - thresh)
@@ -485,7 +458,6 @@ function makeinequalityinternal(
     iq[:total_income] = total_income
     iq[:total_population] = total_population
     iq[:average_income] = y_bar
-    deciles = zeros( 10, 1 )
     popsharelast = 0.0
     incomelast = 0.0
     for row in 1:nrows
@@ -511,32 +483,14 @@ function makeinequalityinternal(
                 alpha :: Float64 = iq[:generalised_entropy_alphas][i]
                 iq[:generalised_entropy][i] += weight*(y_yb^alpha)
             end # entropies
-            # Palma
-            popshare = data[row,POPN_ACCUM]/total_population
-            if popshare ≈ 0.5
-                iq[:median] = income
-            elseif ( popsharelast < 0.5 ) && ( popshare > 0.5 )
-                pgap = popshare - popsharelast
-                p1 = (0.5 - popsharelast)
-                p2 = (popshare-0.5)
-                iq[:median] = ((income*p2)+(incomelast*p1))/pgap # linear weighted
-            end
-            popsharelast = popshare
-            incomelast = income
-            target = 0.0
-            for i in 1:10
-                target+= 0.1
-                if(deciles[i] == 0.0 ) && ( popshare >= target )
-                    deciles[i]=data[row,INCOME_ACCUM]/total_income
-                end
-            end # decile finder
-
         else
             iq[:negative_or_zero_income_count] += 1
         end # positive income
     end # main loop
+    deciles = binify( data, 10 )
+    iq[:median] = deciles[5,3]
     # top 10/bottom 40
-    iq[:palma] = (1-deciles[9])/deciles[4]
+    iq[:palma] = (1.0-deciles[9,2])/deciles[4,2]
     iq[:deciles] = deciles
     iq[:hoover] /= 2.0*total_income
     for i in 1:neps
