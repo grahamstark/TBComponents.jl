@@ -31,10 +31,10 @@ for i in 1:10
     print( "$i = " );print( deciles[i,:]);print("\n")
 end
 
-print( "quintiles\n")
-quintiles = binify( hbai_2003_4, 20, :G_NEWPP,  :S_OE_AHC )
+print( "vigintiles\n")
+vigintiles = binify( hbai_2003_4, 20, :G_NEWPP,  :S_OE_AHC )
 for i in 1:20
-    print( "$i = " );print( quintiles[i,:]);print("\n")
+    print( "$i = " );print( vigintiles, [i,:]);print("\n")
 end
 
 print( "percentiles\n")
