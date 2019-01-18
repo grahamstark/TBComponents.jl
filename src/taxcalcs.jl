@@ -116,8 +116,6 @@ function calc_indirect(
       advalorem     = advalorem,
       specific      = specific )
    q = expenditure / selling_price
-   println( "q=$q")
-   println( "per_unit = $per_unit")
    IndirResult(
       q*per_unit.factor_cost,
       q*per_unit.vat,
