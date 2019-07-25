@@ -8,6 +8,7 @@
 # and copying strucs.
 #
 @enum NetType  NetIncome TotalTaxes BenefitsOnly
+@enum Gender Male Female
 
 # experiment with types
 const NullableFloat = Union{Missing,Float64}
@@ -17,9 +18,10 @@ const NullableArray = Union{Missing,Array{Float64}}
 struct Person
         wage :: Float64
         age  :: Integer
+        sex  :: Gender
 end
 
-const DEFAULT_PERSON = Person( 1_000.0, 40 )
+const DEFAULT_PERSON = Person( 1_000.0, 40, Female )
 
 function modifiedcopy(
    copyFrom :: Person;
@@ -29,7 +31,8 @@ function modifiedcopy(
 
    Person(
       wage !== missing ? wage : copyFrom.wage,
-      age !== missing ? age : copyFrom.age
+      age !== missing ? age : copyFrom.age,
+      copyFrom.sex
    )
 end
 
