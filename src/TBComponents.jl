@@ -18,7 +18,7 @@ export DistanceFunctionType
 export doreweighting, dochisquarereweighting
 
 # general tax routines
-export TaxResult
+export TaxResult, RateBands, IncomesDict, *
 export calctaxdue, calc_indirect, IndirResult
 
 # budget constraint stuff

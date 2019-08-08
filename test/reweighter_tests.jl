@@ -70,13 +70,17 @@ println( "ncols $ncols nrows $nrows sp $sp")
    wchi = dochisquarereweighting( data, initial_weights, target_populations )
    println( "direct chi-square results $wchi")
    weighted_popn_chi = (wchi' * data)'
+   println( "wchisq; got $weighted_popn_chi")
    @test weighted_popn_chi ≈ target_populations
    lower_multiple = 0.20 # any smaller min and d_and_s_constrained fails on this dataset
    upper_multiple = 2.19
    for m in instances( DistanceFunctionType )
       println( "on method $m")
+      if m != constrained_chi_square
+         continue
+      end
       try
-         rw = doreweighting(
+         rw = doreweighting2(
                data               = data,
                initial_weights    = initial_weights,
                target_populations = target_populations,
@@ -88,6 +92,7 @@ println( "ncols $ncols nrows $nrows sp $sp")
          println( "results for method $m = $rw" )
          weights = rw[:weights]
          weighted_popn = (weights' * data)'
+         println( "weighted_popn = $weighted_popn" )
          @test weighted_popn ≈ target_populations
          if m != chi_square
             for w in weights # check: what's the 1-liner for this?

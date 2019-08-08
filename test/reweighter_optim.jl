@@ -39,7 +39,7 @@ note: chi-square is just there for checking purposes; use Do_Basic_Reweighting i
 
 
 "
-function doreweighting(
+function doreweighting2(
     ;
     data               :: AbstractArray{ <:Real, 2 },
     initial_weights    :: AbstractArray{ <:Real, 1 }, # a column
@@ -60,19 +60,24 @@ function doreweighting(
 
     #
     # instead of minimising the loss function (G) we just need to find the zeros
-    # of the 1st derivatives. This computes the derivatives and the hessian
-    # of the G function, hence the slightly confusing names (gradient=>1st deriv of G)
+    # of the 1st derivatives. This computes the derivatives and the J
+    # of the G function, hence the slightly confusing names (F=>1st deriv of G)
     # See table 3 and eqns 25 and 26 in Creedy 2003 http://ideas.repec.org/p/nzt/nztwps/03-17.html
     # This version is in the 'fj' form needed for the NLsolve package if we want to
-    # generate the derivative and hessian in one go, as we do since it's a potentially huge loop
+    # generate the derivative and J in one go, as we do since it's a potentially huge loop
     #
-    function compute_lamdas_and_hessian!( gradient :: Vector, hessian :: Matrix, lamdas :: Vector ) # :: Tuple{Array{Float64},Array{Float64}}
-        # gradient .= 0.0; #zeros( Float64, ncols, 1 )
-        hessian .= 0.0 #zeros( Float64, ncols, ncols )
-        z = zeros( Float64, ncols, 1 )
+    function computefandj!(
+        F       :: Union{Vector,Nothing},
+        J       :: Union{Matrix,Nothing},
+        lamdas  :: Vector )
+        if J !== nothing
+            J = zeros( ncols, ncols )
+        end
+        z = zeros( ncols )
         for row in 1:nrows
             rv = data[row,:]
             u = (rv' * lamdas)[1]
+            println( "u=$u lamdas = $lamdas")
             d_g_m1 = 0.0
             g_m1 = 0.0
             if functiontype == chi_square
@@ -104,44 +109,49 @@ function doreweighting(
            end # function cases
            for col in 1:ncols
                z[col] += initial_weights[row]*data[row,col]*(g_m1-1.0)
-               ## the hessian
-               for c2 in 1:ncols
-                   zz :: Float64 = initial_weights[row]*data[row,col]*data[row,c2]
-                   hessian[col,c2] += zz*d_g_m1
+               ## the J
+               if J != nothing
+                   # println( "HESS CALL")
+                   for c2 in 1:ncols
+                       zz = initial_weights[row]*data[row,col]*data[row,c2]
+                       J[col,c2] += zz*d_g_m1
+                   end
                end
            end
         end # obs loop
-        gradient = a - z
-        println( "gradient $gradient")
+        if F !== nothing
+            F = a - z
+        end
+        println( "F $F")
+        println( "J $J" )
         println( "lamdas $lamdas" )
-        # println( "hessian $hessian" )
-        # return ( gradient, hessian )
     end # nested function
 
-    hessian = zeros( ncols, ncols )
-    gradient = zeros( ncols, 1 )
-    initial_lamdas = zeros( ncols )
-    objective = only_fj!( compute_lamdas_and_hessian! ) # this means: we're providing one function 'fj' which
-                                   # computes both the first derivatives value and the hessian
+    J = zeros( ncols, ncols )
+    F = zeros( ncols )
+    initial_x = zeros( ncols )
+    # initial_x = [0.214763; -0.296946; -0.0128647; 0.078507]
+    objective = only_fj!( computefandj! ) # this means: we're providing one function 'fj' which
+                                   # computes both the first derivatives value and the J
     rc = nlsolve(
-        objective,
-        gradient,
-        hessian,
-        initial_lamdas,
+        only_fj!( computefandj! ),
+        F,
+        J,
+        initial_x,
         inplace        = false,
-        # method         = :newton,
-        # autoscale      = true,
-        # extended_trace = true )
-        xtol           = tolx,
-        ftol           = tolf )
+        method         = :newton,
+        autoscale      = true,
+        extended_trace = true )
+        # xtol           = tolx,
+        # ftol           = tolf )
     new_weights = copy(initial_weights)
-    lamdas = ( rc.zero )
+    x = ( rc.zero )
 
-    # construct the new weights from the lamdas
+    # construct the new weights from the x
     if converged( rc )
         for r in 1:nrows
             row = data[r,:]
-            u = (row'*lamdas)[1]
+            u = (row'*x)[1]
             g_m1 = 0.0
             if functiontype == chi_square
                 g_m1 = 1.0 + u;
@@ -167,7 +177,7 @@ function doreweighting(
             new_weights[r] = initial_weights[r]*g_m1
         end
     end # converged
-    return Buffer(:lamdas=>lamdas, :rc => rc, :weights=>new_weights ) # , :converged => converge )
+    return Buffer(:x=>x, :rc => rc, :weights=>new_weights ) # , :converged => converge )
 end # do reweighting
 
 
@@ -187,9 +197,9 @@ function dochisquarereweighting(
     ncols = size( data )[2]
 
     row = zeros( ncols )
-    populations = zeros( ncols, 1 )
-    lamdas  = zeros( ncols, 1 )
-    weights = zeros( nrows, 1 )
+    populations = zeros( ncols )
+    x  = zeros( ncols )
+    weights = zeros( nrows )
     m = zeros( ncols, ncols )
     for r in 1:nrows
         row = data[r,:]
@@ -198,10 +208,10 @@ function dochisquarereweighting(
             populations[c] += (row[c]*initial_weights[r])'
         end
     end
-    lamdas = (m^-1)*(target_populations-populations)
+    x = (m^-1)*(target_populations-populations)
     for r in 1:nrows
         row = data[r,:]
-        weights[r] = initial_weights[r]*(1.0 + (row'*lamdas)[1])
+        weights[r] = initial_weights[r]*(1.0 + (row'*x)[1])
     end
     return weights;
 end

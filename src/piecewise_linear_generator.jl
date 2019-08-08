@@ -1,8 +1,10 @@
 #
 #
-"
-piecewise_linear_generator
-"
+"""
+A piecewise_linear_generator. Used for generating budget constraints used in
+conventional microeconomics. See Stark and Duncan 1992 in the biblio.
+"""
+
 struct Point2DG{T<:Real}
       x::T
       y::T
@@ -218,7 +220,10 @@ function generate!(
     return depth - 1
 end
 
-
+"""
+Make a budget constraint using function `getnet` to extract net incomes and `settings` (see above on this struct).
+getnet should be a function of the form `net=f(gross)`. See the testcase for an example.
+"""
 function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetConstraint
     ps = PointsSet()
     bc = BudgetConstraint()

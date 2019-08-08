@@ -1,8 +1,29 @@
 "
-Various Standard Tax calculations
+Various Standard Tax calculations. Very incomplete.
 "
 
 const RateBands = AbstractArray{<:Real}
+
+const IncomesDict = Dict{Any,Real}
+
+"""
+   Useful for e.g. calculating expenses against a list
+   of eligible expenses
+"""
+function times( m1::IncomesDict, m2::IncomesDict)::Real
+   m = 0.0
+   ikey = intersect( keys(m1), keys(m2))
+   for k in ikey
+      m += m1[k]*m2[k]
+   end
+   m
+end
+
+import Base.*
+
+function *(m1::IncomesDict, m2::IncomesDict)
+    times(m1, m2)
+end
 
 struct TaxResult{T<:Real}
    due :: T
@@ -17,6 +38,10 @@ struct IndirResult{T<:Real}
    total       :: T
 end
 
+"""
+UK (and maybe other) systems have uprating rules for rates and bands
+in legislation. For example, next £10 or £100 annually.
+"""
 function uprate!(
    x         :: Real,
    uprate_by :: Real,
@@ -24,6 +49,9 @@ function uprate!(
    # TODO
 end
 
+"""
+UK Tax bands have special rules - annual band *gaps* uprated to *next* £100
+"""
 function uprate!(
    bands     :: RateBands,
    uprate_by :: Real,
@@ -31,6 +59,9 @@ function uprate!(
    # TODO
 end
 
+"""
+e.g. Pre 1996 (?) National Insurance (check!)
+"""
 function stepped_tax_calculation(
    ;
    taxable :: Real,
@@ -40,6 +71,9 @@ function stepped_tax_calculation(
 
 end
 
+"""
+Tax due on `taxable` income, given rates and bands
+"""
 function calctaxdue(
       ;
    taxable :: Real,
@@ -103,6 +137,11 @@ function calc_indir_components_per_unit(
    IndirResult( factor_cost, vat_due, add, specific, total )
 end
 
+"""
+Given total expenditure, an average selling price (£20 per bottle of whisky), and vat (% of inputs, inc. other taxes), 
+advalorem (e.g. £10 per bottle), and specific (% of final selling price), calculate indirect taxes due, on assumption of unit price elasticity 
+(e.g. constant spending). Selling price should have same units as advalorem.
+"""
 function calc_indirect(
    ;
    expenditure   :: Real,

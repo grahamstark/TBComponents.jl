@@ -1,9 +1,11 @@
-"
+"""
    Implements the micro data weighting procedures from:
    * Creedy 2003 http://www.treasury.govt.nz/publications/research-policy/wp/2003/03-17/twp03-17.pdf
    * Creedy 2003  http://www.business.curtin.edu.au/files/creedy2.pdf
    * Jean-Claude Deville and Carl-Erik Sarndal http://www.jstor.org/stable/2290268
-"
+"""
+
+
 @enum DistanceFunctionType chi_square d_and_s_type_a d_and_s_type_b constrained_chi_square d_and_s_constrained
 
 const ITERATIONS_EXCEEDED = -1
@@ -99,6 +101,7 @@ function doreweighting(
         for row in 1:nrows
             rv = data[row,:]
             u = (rv' * lamdas)[1]
+            println("u=$u lamdas=$lamdas")
             d_g_m1 = 0.0
             g_m1 = 0.0
             if functiontype == chi_square
@@ -138,7 +141,9 @@ function doreweighting(
            end
         end # obs loop
         gradient = a - z
-        d = Dict(:lamdas=>lamdas,:gradient=>gradient,:hessian=>hessian )
+        println( "gradient $gradient")
+        println( "hessian $hessian")
+        d = Dict(:gradient=>gradient,:hessian=>hessian )
         return d
     end # nested function
 

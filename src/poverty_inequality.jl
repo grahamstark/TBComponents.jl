@@ -86,9 +86,9 @@ function makeaugmented(
     return aug[1:r,:]
 end
 
-"
+"""
 calculate a Gini coefficient on one of our sorted arrays
-"
+"""
 function makegini( data :: Array{Float64, 2} ) :: Float64
     lorenz :: Float64 = 0.0
 
@@ -103,11 +103,11 @@ function makegini( data :: Array{Float64, 2} ) :: Float64
     return 1.0-(lorenz/lastr[INCOME_ACCUM])/lastr[POPN_ACCUM]
 end
 
-"
+"""
 generate a subset of one of our datasets with just the elements whose incomes
 are below the line. Probably possible in 1 line, once I get the hang of this
 a bit more.
-"
+"""
 function makeallbelowline( data :: Array{Float64, 2}, line :: Float64 ) :: Array{Float64, 2 }
     nrows = size( data )[1]
     ncols = size( data )[2]
@@ -124,7 +124,7 @@ function makeallbelowline( data :: Array{Float64, 2}, line :: Float64 ) :: Array
 end
 
 
-"
+"""
 Create a dictionary of poverty measures.
 
 This is based on the [World Bank's Poverty Handbook](http://documents.worldbank.org/curated/en/488081468157174849/Handbook-on-poverty-and-inequality)
@@ -138,7 +138,7 @@ Arguments:
    corresponds to headcount and FGT(1) to gap; count and gap are computed directly anyway
    but it's worth checking one against the other.
 * `growth` is (e.g.) 0.01 for 1% per period, and is used for 'time to exit' measure.
-"
+"""
 function makepoverty(
     rawdata                       :: Array{<:Real, 2},
     line                          :: Real,
@@ -155,11 +155,11 @@ function makepoverty(
         foster_greer_thorndyke_alphas = foster_greer_thorndyke_alphas )
 end
 
-"
+"""
 As above, but using the QueryVerse IterableTables interface
 rawdata - basically anything resembling a dataframe; see: [https://github.com/queryverse/IterableTables.jl]
 throws an exception if rawdata doesn't support iterabletable interface
-"
+"""
 function makepoverty(
     rawdata,
     line                          :: Real,
@@ -178,9 +178,9 @@ function makepoverty(
 end
 
 
-"
+"""
 Internal version, once we have our datatset
-"
+"""
 function makepovertyinternal(
     ;
     data                          :: Array{Float64, 2},
@@ -254,7 +254,7 @@ function makepovertyinternal(
     return pv
 end # makepoverty
 
-"
+"""
 Make a wee dict with :theil_between and :theil_within
 See WB eqns 6.7/6.8.
 TODO
@@ -264,7 +264,7 @@ don't understand them ..
 
  popindic : Inequal for the population as a whole
  subindices : an array of dics, one for each subgroup of interest
-"
+"""
 function adddecomposedtheil( popindic :: OutputDict, subindices :: OutputDictArray ) :: OutputDict
     popn = popindic[:total_population]
     income = popindic[:total_income]
@@ -299,7 +299,7 @@ function adddecomposedtheil( popindic :: OutputDict, subindices :: OutputDictArr
     md
 end
 
-"
+"""
 Make a dictionary of inequality measures.
 This is mainly taken from chs 5 and 6 of the World Bank book.
 
@@ -308,7 +308,7 @@ This is mainly taken from chs 5 and 6 of the World Bank book.
 3. `generalised_entropy_alphas`
 4. `weightpos` - column with weights
 5. `incomepos` - column with incomes
-"
+"""
 function makeinequality(
     rawdata                    :: Array{<:Real, 2 },
     weightpos                  :: Integer = 1,
@@ -323,10 +323,10 @@ function makeinequality(
     )
 end
 
-"
+"""
 As above but using the iterable table interface; see: https://github.com/queryverse/IterableTables.jl
 weightcol and incomecol are names of columns
-"
+"""
 function makeinequality(
     rawdata,
     weightcol                  :: Symbol,
@@ -343,14 +343,14 @@ function makeinequality(
 
 end
 
-"
+"""
 Chop a dataset with populations and incomes
 into numbins groups in a form suitable for
 e.g. a Gini curve.
 * col1 is cumulative population,
 *    2 cumulative income/whatever,
 *    3 threshold income level. 
-"
+"""
 function binify(
     rawdata   :: Array{<:Real, 2 },
     numbins   :: Integer,
@@ -360,9 +360,9 @@ function binify(
     return binifyinternal( data, numbins )
 end
 
-"
+"""
 As above, but using any DataFrame like thing that supports the TableTraits.isiterabletable interface
-"
+"""
 function binify(
     rawdata,
     numbins   :: Integer,
@@ -419,7 +419,7 @@ function binifyinternal(
 end
 
 
-"
+"""
 Make a dictionary of inequality measures.
 This is mainly taken from chs 5 and 6 of the World Bank book.
 
@@ -428,7 +428,7 @@ This is mainly taken from chs 5 and 6 of the World Bank book.
 3. `generalised_entropy_alphas`
 4. `weightpos` - column with weights
 5. `incomepos` - column with incomes
-"
+"""
 function makeinequalityinternal(
     ;
     data                       :: Array{Float64, 2},
