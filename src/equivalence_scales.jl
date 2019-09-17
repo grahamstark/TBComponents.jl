@@ -1,20 +1,31 @@
 #
 # from: Equivalence scales: rationales, uses and assumptions
 # Jenny Chanfreau and Tania Burchardt Table 1 p.5
+# FIXME we need complete table 1 omplementation
+# missing mclem-ahc, whatevere pse is
 #
 
 @enum Equivalence_Scale_Type oxford modified_oecd eq_square_root mcclements eq_per_capita
-@enum Equiv_Person_Type eq_head eq_spouse_of_head eq_other_adult eq_dependent_child
+@enum Equiv_Person_Type eq_head eq_spouse_of_head eq_other_adult eq_dependent_child eq_hbai_ahc
 
 struct EQ_Person
       age::Integer
       ptype::Equiv_Person_Type
 end
 
-function get_equivalence_scales( people::Vector{EQ_Person} )::Dict{Equivalence_Scale_Type,Real}
+"""
+ from: Equivalence scales: rationales, uses and assumptions
+ Jenny Chanfreau and Tania Burchardt Table 1 p.5
+ FIXME we need complete table 1 omplementation
+ missing mclem-ahc, whatevere pse is
+"""
+function get_equivalence_scales(people::Vector{EQ_Person})::Dict{
+      Equivalence_Scale_Type,
+      Real
+}
       eq = 0.0
       scales = Dict{Equivalence_Scale_Type,Real}()
-      np = size( people )[1]
+      np = size(people)[1]
       # choose someone to be the head of the unit
       pos_of_head = 1
       positions_of_head = findall((p -> (p.ptype == eq_head) & (p.age >= 16)), people)
@@ -22,17 +33,19 @@ function get_equivalence_scales( people::Vector{EQ_Person} )::Dict{Equivalence_S
       if num_heads > 0
             pos_of_head = positions_of_head[1]
       end
-      scales[eq_square_root] = sqrt( np )
+      scales[eq_square_root] = sqrt(np)
       scales[eq_per_capita] = np
       ox = 0.0
       oecd = 0.0
       mclem = 0.0
       n_extra_adults = 0
+      hbai = 0.0
       for pno in 1:np
             if pno == pos_of_head
                   ox += 1
                   oecd += 1
                   mclem += 1
+                  hbai += 1
             else
                   if people[pno].age <= 14
                         ox += 0.5
@@ -57,14 +70,22 @@ function get_equivalence_scales( people::Vector{EQ_Person} )::Dict{Equivalence_S
                         else
                               mclem += 0.590
                         end
-                  elseif people[pno].ptype ==  eq_spouse_of_head
+                        if people[pno].age <= 14
+                              hbai += 0.34
+                        else
+                              hbai += 0.72
+                        end
+                  elseif people[pno].ptype == eq_spouse_of_head
                         mclem += 0.640
+                        hbai += 0.72
                   else # other adult
                         n_extra_adults += 1
                         if n_extra_adults == 1
                               mclem += 0.75
+                              hbai += 0.72
                         else
                               mclem += 0.59
+                              hbai += 0.72
                         end
                   end
             end # person not the head
@@ -75,5 +96,6 @@ function get_equivalence_scales( people::Vector{EQ_Person} )::Dict{Equivalence_S
       scales[oxford] = ox
       scales[modified_oecd] = oecd
       scales[mcclements] = mclem
+      scales[eq_hbai_ahc] = hbai
       scales
 end # get_equivalence_scales
