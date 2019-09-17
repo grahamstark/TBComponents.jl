@@ -17,7 +17,7 @@ function get_equivalence_scales( people::Vector{EQ_Person} )::Dict{Equivalence_S
       np = size( people )[1]
       # choose someone to be the head of the unit
       pos_of_head = 1
-      positions_of_head = findall(p -> (p.ptype == eq_head & p.age >= 16), people)
+      positions_of_head = findall((p -> (p.ptype == eq_head) & (p.age >= 16)), people)
       num_heads = size(positions_of_head)[1]
       if num_heads > 0
             pos_of_head = positions_of_head[1]
@@ -37,6 +37,9 @@ function get_equivalence_scales( people::Vector{EQ_Person} )::Dict{Equivalence_S
                   if people[pno].age <= 14
                         ox += 0.5
                         oecd += 0.3
+                  else
+                        ox += 0.7
+                        oecd += 0.5
                   end
                   if people[pno].ptype == eq_dependent_child
                         if people[pno].age in 0:1
