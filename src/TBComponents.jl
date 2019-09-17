@@ -27,8 +27,8 @@ export makebc, pointstoarray
 
 # equivalence scales
 
-export Equivalence_Scale_Type, oxford, modified_oecd, square_root, mcclements
-export Equiv_Person_Type, head, spouse_of_head, other_adult, dependent_child
+export Equivalence_Scale_Type, oxford, modified_oecd, eq_square_root, mcclements, eq_per_capita
+export Equiv_Person_Type, eq_head, eq_spouse_of_head, eq_other_adult, eq_dependent_child
 export EQ_Person
 export get_equivalence_scale
 
