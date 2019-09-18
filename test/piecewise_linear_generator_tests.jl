@@ -1,6 +1,7 @@
 using Test
+using MiniTB
 
-include( "minitb.jl")
+include( "../src/piecewise_linear_generator.jl" )
 
  p1 = Point2D( 1.011,2.011)
  p2 = Point2D( 1.011, 2.011 )

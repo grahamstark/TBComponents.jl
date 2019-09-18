@@ -1,5 +1,6 @@
 module MiniTB
 
+using TBComponents
 #
 # A toy tax-benefit system with outlines of the components
 # a real model would need: models of people (and households)
@@ -10,10 +11,10 @@ module MiniTB
 # and copying strucs.
 #
 
-export calculate, DEFAULT_PERSON, modifiedcopy, Parameters
+export calculate, DEFAULT_PERSON, modifiedcopy, Parameters, Person
 export modifiedcopy, DEFAULT_PARAMS
-export Gender Male Female
-export NetType  NetIncome TotalTaxes BenefitsOnly
+export Gender, Male, Female
+export NetType, NetIncome, TotalTaxes, BenefitsOnly
 
 @enum NetType  NetIncome TotalTaxes BenefitsOnly
 @enum Gender Male Female
