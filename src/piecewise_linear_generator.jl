@@ -146,6 +146,7 @@ function toarray( ps :: PointsSet ) :: BudgetConstraint
 end
 
 function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
+    # println( "censor; ps=$ps")
     bc = toarray( ps )
     sort!( bc )
     nbc = size( bc )[1]
@@ -209,6 +210,8 @@ function generate!(
 
     if line1 ≈ line2
         push!( bc, p1 )
+        push!( bc, p4 )
+
         return depth
     end
     p5 = findintersection( line1, line2 )
