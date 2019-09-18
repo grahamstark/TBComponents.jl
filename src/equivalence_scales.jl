@@ -21,7 +21,7 @@ end
  FIXME we need complete table 1 implementation
  missing mclem-ahc, whatevere pse is
 """
-function get_equivalence_scales(people::Vector{EQ_Person})::Dict{Equivalence_Scale_Type,Real}
+function get_equivalence_scales( people::Vector{EQ_Person} )::Dict{Equivalence_Scale_Type,Real}
 
       eq = 0.0
       scales = Dict{Equivalence_Scale_Type,Real}()
