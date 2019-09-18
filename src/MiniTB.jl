@@ -11,7 +11,7 @@ using TBComponents
 # and copying strucs.
 #
 
-export calculate, DEFAULT_PERSON, modifiedcopy, Parameters, Person
+export calculate, DEFAULT_PERSON, modifiedcopy, Parameters, Person, getnet
 export modifiedcopy, DEFAULT_PARAMS
 export Gender, Male, Female
 export NetType, NetIncome, TotalTaxes, BenefitsOnly
@@ -103,8 +103,8 @@ end
 
 const DEFAULT_PARAMS = Parameters(
         it_allow=500.0,
-        it_rate= [ 0.1, 0.25, 0.4, 0.5, 0.7, 0.9, 1.0, 1.2 ],
-        it_band=[ 2500, 4000, 5000, 8000, 9000, 10000, 12000, 9999999999999999999.99 ],
+        it_rate= [ 0.25, 0.5 ],
+        it_band=[ 10000, 9999999999999999999.99 ],
         benefit1 = 150.0,
         benefit2 = 60.0,
         ben2_l_limit = 200.03,

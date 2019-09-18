@@ -149,7 +149,7 @@ function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
     bc = toarray( ps )
     nbc = size( bc )[1]
     if( nbc < 3 )
-        return
+        return bc
     end
     i = 2
     while i < (nbc - 1)
