@@ -50,6 +50,6 @@ function makebc( pers :: Person, params :: Parameters ) :: BudgetConstraint
 end
 
 bc = makebc( DEFAULT_PERSON, DEFAULT_PARAMS )
-print(bc)
+println(pointstoarray( bc))
 bc = makebc( DEFAULT_PERSON, ZERO_PARAMS )
-print(bc)
+println( pointstoarray( bc))

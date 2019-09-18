@@ -175,10 +175,10 @@ function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
     # 1 liner which sorts and removes dups
     bc = BudgetConstraint( toarray( PointsSet( bc )))
     if bc[1] != first
-        bc = vcat(first,bc)
+        # bc = vcat(first,bc)
     end
     if bc[nbc] != last
-        bc = vcat(bc,last)
+        # bc = vcat(bc,last)
     end
     return bc
 end
