@@ -12,7 +12,7 @@ using TBComponents
 #
 
 export calculate, DEFAULT_PERSON, modifiedcopy, Parameters, Person, getnet
-export modifiedcopy, DEFAULT_PARAMS
+export modifiedcopy, DEFAULT_PARAMS, ZERO_PARAMS
 export Gender, Male, Female
 export NetType, NetIncome, TotalTaxes, BenefitsOnly
 
@@ -110,6 +110,14 @@ const DEFAULT_PARAMS = Parameters(
         ben2_l_limit = 200.03,
         ben2_u_limit = 300.20 )
 
+const ZERO_PARAMS = Parameters(
+       it_allow=0.0,
+       it_rate=[0.0],
+       it_band=[99999999999999999999.99],
+       benefit1 = 0.0,
+       benefit2 = 0.0,
+       ben2_l_limit = 0.0,
+       ben2_u_limit = 0.0 )
 
 const Results = Dict{ Symbol, Any }
 
