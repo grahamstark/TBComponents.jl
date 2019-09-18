@@ -1,3 +1,5 @@
+module MiniTB
+
 #
 # A toy tax-benefit system with outlines of the components
 # a real model would need: models of people (and households)
@@ -7,6 +9,12 @@
 # There's also some experiments of mine with constructors
 # and copying strucs.
 #
+
+export calculate, DEFAULT_PERSON, modifiedcopy, Parameters
+export modifiedcopy, DEFAULT_PARAMS
+export Gender Male Female
+export NetType  NetIncome TotalTaxes BenefitsOnly
+
 @enum NetType  NetIncome TotalTaxes BenefitsOnly
 @enum Gender Male Female
 
@@ -15,7 +23,7 @@ const NullableFloat = Union{Missing,Float64}
 const NullableInt = Union{Missing,Integer}
 const NullableArray = Union{Missing,Array{Float64}}
 
-struct Person
+mutable struct Person
         wage :: Float64
         age  :: Integer
         sex  :: Gender
@@ -37,7 +45,7 @@ function modifiedcopy(
 end
 
 
-struct Parameters
+mutable struct Parameters
    it_allow :: Float64
    it_rate  :: Array{Float64}
    it_band  :: Array{Float64}
@@ -135,4 +143,6 @@ function calculate( pers :: Person, params :: Parameters ) :: Results
    res[:benefit2] = calculatebenefit2( pers, params )
    res[:netincome] = pers.wage + res[:benefit1] + res[:benefit2] - res[:tax]
    return res
+end
+
 end
