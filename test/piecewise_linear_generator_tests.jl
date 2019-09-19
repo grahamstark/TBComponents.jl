@@ -51,15 +51,19 @@ function makebc( person :: Person, params :: Parameters ) :: BudgetConstraint
     return bc
 end
 
+
 bc = makebc( DEFAULT_PERSON, DEFAULT_PARAMS )
+println( "\nDefault Case\n")
 println(pointstoarray( bc))
+
 bc = makebc( DEFAULT_PERSON, ZERO_PARAMS )
+println( "\nZero Params\n")
 println( pointstoarray( bc))
-pars = DEFAULT_PARAMS
-pars.it_allow = 999.0
 person = DEFAULT_PERSON
-#person.wage -= 1
-rc = calculate( DEFAULT_PERSON, pars )
-println(rc)
-bc = makebc( person, pars )
+# rc = calculate( DEFAULT_PERSON, pars )
+pars999 = DEFAULT_PARAMS
+pars999.it_allow = 999.0
+
+println( "\n999 allowance case\n")
+bc = makebc( person, pars999 )
 println( pointstoarray( bc ))

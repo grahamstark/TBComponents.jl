@@ -22,7 +22,7 @@ const Line2D = Line2DG{Float64}
 const BudgetConstraint = Array{Point2DG,1}
 const PointsSet = Set{Point2DG}
 
-const VERTICAL   = 9999999999.9999;
+const VERTICAL   = 9_999_999_999.9999;
 const TOLERANCE  = 0.0001;
 const INCREMENT  = 0.0001;
 const MAX_DEPTH  = 50;

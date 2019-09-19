@@ -82,8 +82,9 @@ function calctaxdue(
    due = 0.0
    mr  = 0.0
    remaining = taxable
-   i = 1
+   i = 0
    while remaining > 0.0
+      i += 1
       if i > 1
          gap = bands[i]-bands[i-1]
       else
@@ -92,7 +93,6 @@ function calctaxdue(
       t = min( remaining, gap )
       due += t*rates[i]
       remaining -= gap
-      i += 1
    end
    TaxResult( due, i )
 end
@@ -138,8 +138,8 @@ function calc_indir_components_per_unit(
 end
 
 """
-Given total expenditure, an average selling price (£20 per bottle of whisky), and vat (% of inputs, inc. other taxes), 
-advalorem (e.g. £10 per bottle), and specific (% of final selling price), calculate indirect taxes due, on assumption of unit price elasticity 
+Given total expenditure, an average selling price (£20 per bottle of whisky), and vat (% of inputs, inc. other taxes),
+advalorem (e.g. £10 per bottle), and specific (% of final selling price), calculate indirect taxes due, on assumption of unit price elasticity
 (e.g. constant spending). Selling price should have same units as advalorem.
 """
 function calc_indirect(
