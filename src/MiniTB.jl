@@ -15,6 +15,7 @@ export calculate, DEFAULT_PERSON, modifiedcopy, Parameters, Person, getnet
 export modifiedcopy, DEFAULT_PARAMS, ZERO_PARAMS
 export Gender, Male, Female
 export NetType, NetIncome, TotalTaxes, BenefitsOnly
+export calculatetax,calculatebenefit1,calculatebenefit2
 
 @enum NetType  NetIncome TotalTaxes BenefitsOnly
 @enum Gender Male Female
@@ -112,14 +113,14 @@ function modifiedcopy(
 end
 
 const DEFAULT_PARAMS = Parameters(
-        it_allow=500.0,
+        it_allow=300.0,
         it_rate= [ 0.25, 0.5 ],
         it_band=[ 10000, 9999999999999999999.99 ],
         benefit1 = 150.0,
         benefit2 = 60.0,
-        ben2_l_limit = 200.03,
+        ben2_l_limit = 150.0,
         ben2_taper  = 0.5,
-        ben2_u_limit = 300.20 )
+        ben2_u_limit = 250.0 )
 
 const ZERO_PARAMS = Parameters(
        it_allow=0.0,
