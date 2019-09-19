@@ -3,7 +3,7 @@ module MiniTB
 using TBComponents
 #
 # A toy tax-benefit system with outlines of the components
-# a real model would need: models of people (and households)
+# a Float64 model would need: models of people (and households)
 # a parameter system, a holder for results, and some calculations
 # using those things.
 # Used in test building budget constraints.
@@ -30,7 +30,13 @@ mutable struct Person
         sex  :: Gender
 end
 
+mutable struct Household
+   rent :: Float64
+   people :: Vector{Person}
+end
+
 const DEFAULT_PERSON = Person( 1_000.0, 40, Female )
+const DEFAULT_HOUSEHOLD = Household(200.0,[DEFAULT_PERSON])
 
 function modifiedcopy(
    copyFrom :: Person;
@@ -54,6 +60,7 @@ mutable struct Parameters
    benefit1 :: Float64
    benefit2 :: Float64
    ben2_l_limit :: Float64
+   ben2_taper  :: Float64
    ben2_u_limit :: Float64
 
    # attempt a constructor with named parameters
@@ -66,9 +73,10 @@ mutable struct Parameters
       benefit1 :: Float64,
       benefit2 :: Float64,
       ben2_l_limit :: Float64,
+      ben2_taper  :: Float64,
       ben2_u_limit :: Float64
       )
-      new( it_allow, it_rate, it_band, benefit1, benefit2, ben2_l_limit, ben2_u_limit )
+      new( it_allow, it_rate, it_band, benefit1, benefit2, ben2_l_limit, ben2_taper, ben2_u_limit )
    end
 end
 
@@ -85,6 +93,7 @@ function modifiedcopy(
    benefit1 :: NullableFloat = missing,
    benefit2 :: NullableFloat = missing,
    ben2_l_limit :: NullableFloat = missing,
+   ben2_taper :: NullableFloat = missing,
    ben2_u_limit :: NullableFloat = missing
    ) :: Parameters
 
@@ -97,6 +106,7 @@ function modifiedcopy(
       benefit1 = benefit1 !== missing ? benefit1 : copyFrom.benefit1,
       benefit2 = benefit2 !== missing ? benefit2 : copyFrom.benefit2,
       ben2_l_limit = ben2_l_limit !== missing ? ben2_l_limit : copyFrom.ben2_l_limit,
+      ben2_taper = ben2_taper !== missing ? ben2_taper : copyFrom.ben2_taper,
       ben2_u_limit = ben2_u_limit !== missing ? ben2_u_limit : copyFrom.ben2_u_limit
    )
 end
@@ -108,6 +118,7 @@ const DEFAULT_PARAMS = Parameters(
         benefit1 = 150.0,
         benefit2 = 60.0,
         ben2_l_limit = 200.03,
+        ben2_taper  = 0.5,
         ben2_u_limit = 300.20 )
 
 const ZERO_PARAMS = Parameters(
@@ -117,6 +128,7 @@ const ZERO_PARAMS = Parameters(
        benefit1 = 0.0,
        benefit2 = 0.0,
        ben2_l_limit = 0.0,
+       ben2_taper = 0.0,
        ben2_u_limit = 0.0 )
 
 const Results = Dict{ Symbol, Any }
@@ -140,7 +152,7 @@ end
 function calculatebenefit2( pers :: Person, params :: Parameters ) :: Float64
    b = pers.wage >= params.ben2_l_limit ? params.benefit2 : 0.0
    if pers.wage > params.ben2_u_limit
-      b -= 0.3*params.benefit2
+      b = max( 0.0, b-(params.ben2_taper*wage))
    end
    return b
 end
