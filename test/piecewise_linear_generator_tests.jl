@@ -3,6 +3,7 @@ using MiniTB
 
 include( "../src/piecewise_linear_generator.jl" )
 
+# @testset begin
  p1 = Point2D( 1.011,2.011)
  p2 = Point2D( 1.011, 2.011 )
  p3 = Point2D( 1.011, 3.011 )
@@ -53,3 +54,11 @@ bc = makebc( DEFAULT_PERSON, DEFAULT_PARAMS )
 println(pointstoarray( bc))
 bc = makebc( DEFAULT_PERSON, ZERO_PARAMS )
 println( pointstoarray( bc))
+pars = DEFAULT_PARAMS
+# pars.it_allow = 999.0
+person = DEFAULT_PERSON
+person.wage -= 1
+rc = calculate( DEFAULT_PERSON, pars )
+println(rc)
+bc = makebc( person, pars )
+println( pointstoarray( bc ))
