@@ -152,7 +152,7 @@ end
 function calculatebenefit2( pers :: Person, params :: Parameters ) :: Float64
    b = pers.wage >= params.ben2_l_limit ? params.benefit2 : 0.0
    if pers.wage > params.ben2_u_limit
-      b = max( 0.0, b-(params.ben2_taper*wage))
+      b = max( 0.0, b-(params.ben2_taper*pers.wage))
    end
    return b
 end
