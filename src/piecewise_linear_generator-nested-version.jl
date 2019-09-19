@@ -187,7 +187,6 @@ end
 
 function generate!(
     bc       :: PointsSet,
-    data     :: Dict,
     getnet,  # TODO give this a signature ( Float64 ) :: Float64
     depth    :: Integer,
     startpos :: Float64,
@@ -201,10 +200,10 @@ function generate!(
     if depth > settings.maxdepth
         throw( "max depth exceeded $depth"  )
     end
-    p1 = Point2D( startpos, getnet( data, startpos) )
-    p2 = Point2D( startpos+settings.increment, getnet(data, startpos+settings.increment))
-    p4 = Point2D( endpos, getnet(data, endpos) )
-    p3 = Point2D( endpos-settings.increment, getnet(data, endpos-settings.increment) )
+    p1 = Point2D( startpos, getnet(startpos) )
+    p2 = Point2D( startpos+settings.increment, getnet(startpos+settings.increment))
+    p4 = Point2D( endpos, getnet(endpos) )
+    p3 = Point2D( endpos-settings.increment, getnet(endpos-settings.increment) )
 
     line1 = makeline( p1, p2 )
     line2 = makeline( p3, p4 )
@@ -225,11 +224,11 @@ function generate!(
     #
     # expore to the left
     #
-    depth = generate!( bc, data, getnet, depth, startpos, anchor, settings )
+    depth = generate!( bc, getnet, depth, startpos, anchor, settings )
     #
     # then the right
     #
-    depth = generate!( bc, data, getnet, depth, anchor, endpos, settings )
+    depth = generate!( bc, getnet, depth, anchor, endpos, settings )
     return depth - 1
 end
 
@@ -237,12 +236,12 @@ end
 Make a budget constraint using function `getnet` to extract net incomes and `settings` (see above on this struct).
 getnet should be a function of the form `net=f(gross)`. See the testcase for an example.
 """
-function makebc( data :: Dict, getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetConstraint
+function makebc( getnet, settings :: BCSettings = DEFAULT_SETTINGS ) :: BudgetConstraint
     bc = BudgetConstraint()
     ps = PointsSet()
     depth = 0
     try
-        depth = generate!( ps, data, getnet, depth, settings.mingross, settings.maxgross, settings )
+        depth = generate!( ps, getnet, depth, settings.mingross, settings.maxgross, settings )
         bc = censor( ps, settings.round_output )
     catch e
         ## FIXME print a fuller stack trace here

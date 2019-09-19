@@ -34,20 +34,19 @@ pars = DEFAULT_PARAMS
 res = calculate( pers, pars )
 println( "res=$res" )
 
-# @test size( ps ) == 4
-function getnet( data :: Dict, gross :: Float64 ) :: Float64
-     person = data[:person]
-     person.wage = gross
-     rc = calculate( pers, data[:params] )
-     return rc[:netincome]
-end
+ # @test size( ps ) == 4
 
+function makebc( pers :: Person, params :: Parameters ) :: BudgetConstraint
 
-function makebc( person :: Person, params :: Parameters ) :: BudgetConstraint
-    data = Dict(
-        :person=>person,
-        :params=>params )
-    bc = makebc( data, getnet )
+    function getnet( gross :: Float64 ) :: Float64
+        persedit = modifiedcopy( pers, wage=gross )
+        # println( "getnet; made person $persedit")
+        rc = calculate( persedit, params )
+        return rc[:netincome]
+    end
+
+    bc = makebc( getnet )
+
     return bc
 end
 
