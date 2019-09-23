@@ -4,6 +4,7 @@ using Test
 using IterableTables
 using TableTraits
 using IteratorInterfaceExtensions
+using MiniTB
 
 
 include( "../src/common_types.jl" )
@@ -20,5 +21,4 @@ include( "test_hbai.jl")
 include( "poverty_inequality_tests.jl" )
 include( "reweighter_tests.jl" )
 include( "taxcalcs_tests.jl" )
-include( "minitb.jl" )
 include( "piecewise_linear_generator_tests.jl" )
