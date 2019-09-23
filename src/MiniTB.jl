@@ -172,13 +172,23 @@ function calculatebenefit2(pers::Person, params::Parameters)::Float64
    return b
 end
 
-function calculate(pers::Person, params::Parameters)::Results
+INCR = 0.001
+
+function calculate_internal(pers::Person, params::Parameters)::Results
    res = Results()
    res[:tax] = calculatetax(pers, params)
    res[:benefit1] = calculatebenefit1(pers, params)
    res[:benefit2] = calculatebenefit2(pers, params)
    res[:netincome] = pers.wage + res[:benefit1] + res[:benefit2] - res[:tax]
    return res
+end
+
+function calculate( pers::Person, params::Parameters)::Results
+   res1 = calculate_internal( pers, params )
+   pers.wage += INCR
+   res2 = calculate_internal( pers, params )
+   res1[:metr] = 1.0-((res2[:netincome]-res1[:netincome])/INCR)
+   res1
 end
 
 end
