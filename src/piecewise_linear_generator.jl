@@ -25,8 +25,8 @@ const PointsSet = Set{Point2DG}
 const VERTICAL   = 9_999_999_999.9999;
 const TOLERANCE  = 0.0001;
 const INCREMENT  = 0.0001;
-const MAX_DEPTH  = 50;
-const MAX_INCOME = 20000.0;
+const MAX_DEPTH  = 500;
+const MAX_INCOME = 20_000.0;
 const MIN_INCOME = 0.0;
 
 const ROUND_OUTPUT = false;
@@ -60,6 +60,7 @@ end
 function findintersection( line_1::Line2D, line_2 :: Line2D ) :: Point2D
     x :: Float64 = 0.0
     y :: Float64 = 0.0
+    # println( "line_1.b=$(line_1.b) line_2.b=$(line_2.b)")
     if !( line_1.b ≈ line_2.b )
         x = (line_2.a - line_1.a) / (line_1.b - line_2.b);
         y = line_1.a + (x * line_1.b );
@@ -110,7 +111,10 @@ end
 import Base.≈
 
 function ≈(left :: Point2D, right::Point2D )::Bool
-   (left.x ≈ right.x) && ( left.y ≈ right.y )
+   # (left.x ≈ right.x) && ( left.y ≈ right.y )
+   # FIXME copied from C# version; can't remeber why I did this
+   tentol = TOLERANCE*10
+   ((abs(left.x ≈ right.x)<tentol) && (abs( left.y ≈ right.y ) < tentol))
 end
 
 function ≈(left :: Line2D, right::Line2D )::Bool
@@ -146,7 +150,6 @@ function toarray( ps :: PointsSet ) :: BudgetConstraint
 end
 
 function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
-    # println( "censor; ps=$ps")
     bc = toarray( ps )
     sort!( bc )
     nbc = size( bc )[1]
@@ -164,7 +167,7 @@ function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
         l2 = makeline( p2, p3 )
         if l1 ≈ l2
             deleteat!( bc, i )
-            nbc -= 1
+            nbc = size( bc )[1]
         else
             i += 1
         end
@@ -173,14 +176,7 @@ function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
     if round
         round2pl!( bc )
     end
-    # 1 liner which sorts and removes dups
     bc = BudgetConstraint( toarray( PointsSet( bc )))
-    if bc[1] != first
-        # bc = vcat(first,bc)
-    end
-    if bc[nbc] != last
-        # bc = vcat(bc,last)
-    end
     return bc
 end
 
@@ -204,6 +200,7 @@ function generate!(
     p1 = Point2D( startpos, getnet( data, startpos) )
     p2 = Point2D( startpos+settings.increment, getnet(data, startpos+settings.increment))
     p4 = Point2D( endpos, getnet(data, endpos) )
+
     p3 = Point2D( endpos-settings.increment, getnet(data, endpos-settings.increment) )
 
     line1 = makeline( p1, p2 )
@@ -211,8 +208,8 @@ function generate!(
 
     if line1 ≈ line2
         push!( bc, p1 )
+        lbc = length(bc)
         push!( bc, p4 )
-
         return depth
     end
     p5 = findintersection( line1, line2 )
@@ -246,8 +243,8 @@ function makebc( data :: Dict, getnet, settings :: BCSettings = DEFAULT_SETTINGS
         bc = censor( ps, settings.round_output )
     catch e
         ## FIXME print a fuller stack trace here
-        println( "failed! $e")
-        println(stacktrace())
+        # println( "failed! $e")
+        # println(stacktrace())
     end
     bc;
 end
