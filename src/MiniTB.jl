@@ -189,7 +189,7 @@ function calculate( pers::Person, params::Parameters)::Results
    res2 = calculate_internal( pers, params )
    m_metr = (res2[:netincome]-res1[:netincome])/INCR
    res1[:metr] = round( 1.0-m_metr, digits=4)
-   tax_credit = res1[:net_income] - (m_metr*pers.wage)
+   tax_credit = res1[:netincome] - (m_metr*pers.wage)
    res1[:tax_credit] = round( tax_credit, digits=4)
    pers.wage -= INCR
    res1
