@@ -161,7 +161,8 @@ function calculatetax(pers::Person, params::Parameters)::Float64
 end
 
 function calculatebenefit1(pers::Person, params::Parameters)::Float64
-   return (pers.wage <= params.benefit1 ? params.benefit1 - pers.wage : 0.0)
+   ben = params.benefit1 - pers.wage
+   return max(0.0, ben )
 end
 
 function calculatebenefit2(pers::Person, params::Parameters)::Float64

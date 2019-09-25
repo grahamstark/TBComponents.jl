@@ -113,7 +113,7 @@ import Base.≈
 function ≈(left :: Point2D, right::Point2D )::Bool
    # (left.x ≈ right.x) && ( left.y ≈ right.y )
    # FIXME copied from C# version; can't remeber why I did this
-   tentol = TOLERANCE*10
+   tentol = TOLERANCE
    ((abs(left.x ≈ right.x)<tentol) && (abs( left.y ≈ right.y ) < tentol))
 end
 
@@ -124,17 +124,13 @@ function ≈(left :: Line2D, right::Line2D )::Bool
    return ((( abs(left.a-right.a)) <= TOLERANCE ) && (( abs(left.b-right.b)) <= TOLERANCE ));
 end
 
-# round a float to 2dps
-function round2pl( x::Float64 )::Float64
-    x *= 100.0
-    i = trunc(x)
-    x = Float64(i/100)
-end
 
-function round2pl!( bc :: BudgetConstraint )
+function roundpoints!( bc :: BudgetConstraint )
     nbc = size( bc )[1]
     for i in 1:nbc
-        p = Point2D( round2pl( bc[i].x ), round2pl( bc[i].y))
+        p = Point2D(
+            round( bc[i].x, digits=4, base=10),
+            round( bc[i].y, digits=4, base=10))
         bc[i] = p
     end
 end
@@ -174,7 +170,7 @@ function censor( ps :: PointsSet, round :: Bool=true ) :: BudgetConstraint
     end # while
     i = 1
     if round
-        round2pl!( bc )
+        roundpoints!( bc )
     end
     bc = BudgetConstraint( toarray( PointsSet( bc )))
     return bc

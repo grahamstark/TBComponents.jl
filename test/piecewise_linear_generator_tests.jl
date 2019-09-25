@@ -30,7 +30,7 @@ bc2 = censor( ps )
 println( "bc2 = $bc2 ")
 @test size( bc2 )[1] == 5
 pers = DEFAULT_PERSON
-pars = DEFAULT_PARAMS
+pars = deepcopy(DEFAULT_PARAMS)
 res = calculate( pers, pars )
 println( "res=$res" )
 
@@ -61,7 +61,7 @@ println( "\nZero Params\n")
 println( pointstoarray( bc))
 person = DEFAULT_PERSON
 # rc = calculate( DEFAULT_PERSON, pars )
-pars999 = DEFAULT_PARAMS
+pars999 = deepcopy(DEFAULT_PARAMS)
 pars999.it_allow = 999.0
 
 println( "\n999 allowance case\n")
