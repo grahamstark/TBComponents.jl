@@ -66,6 +66,7 @@ mutable struct Parameters
    ben2_l_limit::Float64
    ben2_taper::Float64
    ben2_u_limit::Float64
+   basic_income::Float64
 
    # attempt a constructor with named parameters
    function Parameters(
@@ -79,6 +80,7 @@ mutable struct Parameters
       ben2_l_limit::Float64,
       ben2_taper::Float64,
       ben2_u_limit::Float64,
+      basic_income::Float64
    )
       new(
          it_allow,
@@ -89,6 +91,7 @@ mutable struct Parameters
          ben2_l_limit,
          ben2_taper,
          ben2_u_limit,
+         basic_income
       )
    end
 end
@@ -108,6 +111,8 @@ function modifiedcopy(
    ben2_l_limit::NullableFloat = missing,
    ben2_taper::NullableFloat = missing,
    ben2_u_limit::NullableFloat = missing,
+   basic_income::NullableFloat = missing,
+
 )::Parameters
 
    x = it_allow !== missing ? it_allow : copyFrom.it_allow
@@ -121,6 +126,7 @@ function modifiedcopy(
       ben2_l_limit = ben2_l_limit !== missing ? ben2_l_limit : copyFrom.ben2_l_limit,
       ben2_taper = ben2_taper !== missing ? ben2_taper : copyFrom.ben2_taper,
       ben2_u_limit = ben2_u_limit !== missing ? ben2_u_limit : copyFrom.ben2_u_limit,
+      basic_income = basic_income !== missing ? basic_income : copyFrom.basic_income
    )
 end
 
@@ -133,6 +139,7 @@ const DEFAULT_PARAMS = Parameters(
    ben2_l_limit = 150.0,
    ben2_taper = 0.5,
    ben2_u_limit = 250.0,
+   basic_income = 0.0
 )
 
 const ZERO_PARAMS = Parameters(
@@ -144,6 +151,7 @@ const ZERO_PARAMS = Parameters(
    ben2_l_limit = 0.0,
    ben2_taper = 0.0,
    ben2_u_limit = 0.0,
+   basic_income = 0.0
 )
 
 const Results = Dict{Symbol,Any}
@@ -180,7 +188,9 @@ function calculate_internal(pers::Person, params::Parameters)::Results
    res[:tax] = calculatetax(pers, params)
    res[:benefit1] = calculatebenefit1(pers, params)
    res[:benefit2] = calculatebenefit2(pers, params)
-   res[:netincome] = pers.wage + res[:benefit1] + res[:benefit2] - res[:tax]
+   res[:basic_income] = params.basic_income
+
+   res[:netincome] = pers.wage + res[:benefit1] + res[:benefit2]+res[:basic_income] - res[:tax]
    return res
 end
 
