@@ -129,8 +129,8 @@ function roundpoints!( bc :: BudgetConstraint )
     nbc = size( bc )[1]
     for i in 1:nbc
         p = Point2D(
-            round( bc[i].x, digits=4, base=10),
-            round( bc[i].y, digits=4, base=10))
+            round( bc[i].x, digits=2, base=10),
+            round( bc[i].y, digits=2, base=10))
         bc[i] = p
     end
 end
