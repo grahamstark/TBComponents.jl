@@ -26,7 +26,7 @@ const VERTICAL   = 9_999_999_999.9999;
 const TOLERANCE  = 0.0001;
 const INCREMENT  = 0.0001;
 const MAX_DEPTH  = 500;
-const MAX_INCOME = 20_000.0;
+const MAX_INCOME = 2_000.0;
 const MIN_INCOME = 0.0;
 
 const ROUND_OUTPUT = false;
