@@ -6,6 +6,18 @@ const RateBands = AbstractArray{<:Real}
 
 const IncomesDict = Dict{Any,Real}
 
+const WEEKS_PER_YEAR = 365.25/7.0
+
+function weeklyise( annual_amount )
+   round(annual_amount/WEEKS_PER_YEAR, digits=6) # round( x, digits=2) possibly
+end
+
+function annualise( weekly_amount :: Number )
+   round( weekly_amount*WEEKS_PER_YEAR, digits=2)
+end
+
+## TODO rooker wise style stuff
+
 """
    Useful for e.g. calculating expenses against a list
    of eligible expenses

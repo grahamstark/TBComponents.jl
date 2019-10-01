@@ -131,9 +131,9 @@ function modifiedcopy(
 end
 
 const DEFAULT_PARAMS = Parameters(
-   it_allow = 300.0,
-   it_rate = [0.25, 0.5],
-   it_band = [10_000, 9999999999999999999.99],
+   it_allow = weeklyise(12_500),
+   it_rate = [0.20, 0.4],
+   it_band = [weeklyise(50_000), 9999999999999999999.99],
    benefit1 = 150.0,
    benefit2 = 60.0,
    ben2_l_limit = 150.0,
