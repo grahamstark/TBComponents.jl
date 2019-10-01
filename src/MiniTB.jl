@@ -13,7 +13,7 @@ using TBComponents
 
 export calculate, DEFAULT_PERSON, modifiedcopy, Parameters, Person, getnet
 export modifiedcopy, DEFAULT_PARAMS, ZERO_PARAMS
-export Gender, Male, Female
+export Gender, Male, Female, DEFAULT_WAGE, DEFAULT_HOURS
 export NetType, NetIncome, TotalTaxes, BenefitsOnly
 export calculatetax, calculatebenefit1, calculatebenefit2, calculate_internal
 
@@ -28,6 +28,7 @@ const NullableArray = Union{Missing,Array{Float64}}
 mutable struct Person
    pid::BigInt
    wage::Float64
+   hours::Float64
    age::Integer
    sex::Gender
 end
@@ -38,18 +39,23 @@ mutable struct Household
    people::Vector{Person}
 end
 
-const DEFAULT_PERSON = Person( BigInt(1), 1_000.0, 40, Female)
+const DEFAULT_HOURS = 30
+const DEFAULT_WAGE = 5.0
+
+const DEFAULT_PERSON = Person( BigInt(1), DEFAULT_HOURS*DEFAULT_WAGE, DEFAULT_HOURS, 40, Female)
 const DEFAULT_HOUSEHOLD = Household( 1, 200.0, [DEFAULT_PERSON])
 
 function modifiedcopy(
    copyFrom::Person;
    wage::NullableFloat = missing,
+   hours::NullableFloat,
    age::NullableInt = missing,
 )::Person
 
    Person(
       copyFrom.pid,
       wage !== missing ? wage : copyFrom.wage,
+      hours !== missing ? hours : copyFrom.hours,
       age !== missing ? age : copyFrom.age,
       copyFrom.sex,
    )
@@ -63,7 +69,7 @@ mutable struct Parameters
 
    benefit1::Float64
    benefit2::Float64
-   ben2_l_limit::Float64
+   ben2_min_hours::Float64
    ben2_taper::Float64
    ben2_u_limit::Float64
    basic_income::Float64
@@ -77,7 +83,7 @@ mutable struct Parameters
 
       benefit1::Float64,
       benefit2::Float64,
-      ben2_l_limit::Float64,
+      ben2_min_hours::Float64,
       ben2_taper::Float64,
       ben2_u_limit::Float64,
       basic_income::Float64
@@ -88,7 +94,7 @@ mutable struct Parameters
          it_band,
          benefit1,
          benefit2,
-         ben2_l_limit,
+         ben2_min_hours,
          ben2_taper,
          ben2_u_limit,
          basic_income
@@ -108,7 +114,7 @@ function modifiedcopy(
 
    benefit1::NullableFloat = missing,
    benefit2::NullableFloat = missing,
-   ben2_l_limit::NullableFloat = missing,
+   ben2_min_hours::NullableFloat = missing,
    ben2_taper::NullableFloat = missing,
    ben2_u_limit::NullableFloat = missing,
    basic_income::NullableFloat = missing,
@@ -123,7 +129,7 @@ function modifiedcopy(
 
       benefit1 = benefit1 !== missing ? benefit1 : copyFrom.benefit1,
       benefit2 = benefit2 !== missing ? benefit2 : copyFrom.benefit2,
-      ben2_l_limit = ben2_l_limit !== missing ? ben2_l_limit : copyFrom.ben2_l_limit,
+      ben2_min_hours = ben2_min_hours !== missing ? ben2_min_hours : copyFrom.ben2_min_hours,
       ben2_taper = ben2_taper !== missing ? ben2_taper : copyFrom.ben2_taper,
       ben2_u_limit = ben2_u_limit !== missing ? ben2_u_limit : copyFrom.ben2_u_limit,
       basic_income = basic_income !== missing ? basic_income : copyFrom.basic_income
@@ -134,11 +140,11 @@ const DEFAULT_PARAMS = Parameters(
    it_allow = weeklyise(12_500),
    it_rate = [0.20, 0.4],
    it_band = [weeklyise(50_000), 9999999999999999999.99],
-   benefit1 = 150.0,
-   benefit2 = 60.0,
-   ben2_l_limit = 150.0,
-   ben2_taper = 0.5,
-   ben2_u_limit = 250.0,
+   benefit1 = 73.10,
+   benefit2 = 101.0, # weeklyise( 1_960.0+ 545+2_780.0),
+   ben2_min_hours = 30.0,
+   ben2_taper = 0.41,
+   ben2_u_limit = weeklyise(6_420.0),
    basic_income = 0.0
 )
 
@@ -148,7 +154,7 @@ const ZERO_PARAMS = Parameters(
    it_band = [99999999999999999999.99],
    benefit1 = 0.0,
    benefit2 = 0.0,
-   ben2_l_limit = 0.0,
+   ben2_min_hours = 0.0,
    ben2_taper = 0.0,
    ben2_u_limit = 0.0,
    basic_income = 0.0
@@ -174,7 +180,7 @@ function calculatebenefit1(pers::Person, params::Parameters)::Float64
 end
 
 function calculatebenefit2(pers::Person, params::Parameters)::Float64
-   b = pers.wage >= params.ben2_l_limit ? params.benefit2 : 0.0
+   b = pers.hours >= params.ben2_min_hours ? params.benefit2 : 0.0
    if pers.wage > params.ben2_u_limit
       b = max(0.0, b - (params.ben2_taper * (pers.wage - params.ben2_u_limit)))
    end

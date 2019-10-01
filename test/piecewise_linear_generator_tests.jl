@@ -1,6 +1,7 @@
 using Test
 using MiniTB
 
+include( "../src/taxcalcs.jl" )
 include( "../src/piecewise_linear_generator.jl" )
 
 # @testset begin
@@ -38,6 +39,7 @@ println( "res=$res" )
 function getnet( data :: Dict, gross :: Float64 ) :: Float64
      person = data[:person]
      person.wage = gross
+     person.hours = gross/DEFAULT_WAGE
      rc = calculate( pers, data[:params] )
      return rc[:netincome]
 end
