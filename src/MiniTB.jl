@@ -140,11 +140,11 @@ const DEFAULT_PARAMS = Parameters(
    it_allow = weeklyise(12_500),
    it_rate = [0.20, 0.4],
    it_band = [weeklyise(50_000), 9999999999999999999.99],
-   benefit1 = 73.10,
+   benefit1 = 73.00,
    benefit2 = 101.0, # weeklyise( 1_960.0+ 545+2_780.0),
    ben2_min_hours = 30.0,
    ben2_taper = 0.41,
-   ben2_u_limit = weeklyise(6_420.0),
+   ben2_u_limit = 123.00,
    basic_income = 0.0
 )
 
