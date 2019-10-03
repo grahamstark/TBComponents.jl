@@ -245,6 +245,18 @@ function makebc( data :: Dict, getnet, settings :: BCSettings = DEFAULT_SETTINGS
     bc;
 end
 
+# a list of taxcredits and marginal rates
+function annotate_bc( bcpoints :: BudgetConstraint ) :: AbstractArray{NamedTuple}
+    np = size( bcpoints )[1]
+    out = []
+    for i in 1:np-1
+        l = makeline( bcpoints[i], bcpoints[i+1])
+        outv = ( taxcredit=l.a, marginalrate=(1.0-l.b ))
+        push!( out, outv )
+    end
+    out
+end
+
 function pointstoarray( bc :: BudgetConstraint ) :: Array{Float64,2}
     sz = size( bc, 1 )
     pts = zeros( Float64, sz, 2 )

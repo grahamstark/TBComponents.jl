@@ -25,7 +25,7 @@ export calctaxdue, calc_indirect, IndirResult
 
 # budget constraint stuff
 export Point2DG, Point2D, BudgetConstraint, BCSettings, DEFAULT_SETTINGS
-export makebc, pointstoarray
+export makebc, pointstoarray, annotate_bc
 
 # equivalence scales
 

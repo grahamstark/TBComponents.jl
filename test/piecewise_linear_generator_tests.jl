@@ -57,10 +57,16 @@ end
 bc = makebc( DEFAULT_PERSON, DEFAULT_PARAMS )
 println( "\nDefault Case\n")
 println(pointstoarray( bc))
+annotations = annotate_bc( bc )
+println( annotations )
+
 
 bc = makebc( DEFAULT_PERSON, ZERO_PARAMS )
 println( "\nZero Params\n")
 println( pointstoarray( bc))
+annotations = annotate_bc( bc )
+println( annotations )
+
 person = DEFAULT_PERSON
 # rc = calculate( DEFAULT_PERSON, pars )
 pars999 = deepcopy(DEFAULT_PARAMS)
@@ -69,3 +75,5 @@ pars999.it_allow = 999.0
 println( "\n999 allowance case\n")
 bc = makebc( person, pars999 )
 println( pointstoarray( bc ))
+annotations = annotate_bc( bc )
+println( annotations )
