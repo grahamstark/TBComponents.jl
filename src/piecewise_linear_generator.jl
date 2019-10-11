@@ -186,6 +186,7 @@ function generate!(
     endpos   :: Float64,
     settings :: BCSettings ) :: Integer
     diff = abs( startpos - endpos )
+    # println( "generate entered depth $depth")
     tolerance = settings.tolerance
     if( diff < settings.tolerance )
         return depth
@@ -234,14 +235,14 @@ function makebc( data :: Dict, getnet, settings :: BCSettings = DEFAULT_SETTINGS
     bc = BudgetConstraint()
     ps = PointsSet()
     depth = 0
-    try
+    # try
         depth = generate!( ps, data, getnet, depth, settings.mingross, settings.maxgross, settings )
         bc = censor( ps, settings.round_output )
-    catch e
+    # catch e
         ## FIXME print a fuller stack trace here
         # println( "failed! $e")
-        # println(stacktrace())
-    end
+    #    println(stacktrace())
+    # end
     bc;
 end
 

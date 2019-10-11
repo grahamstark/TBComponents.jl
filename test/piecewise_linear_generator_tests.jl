@@ -40,7 +40,7 @@ function getnet( data :: Dict, gross :: Float64 ) :: Float64
      person = data[:person]
      person.wage = gross
      person.hours = gross/DEFAULT_WAGE
-     rc = calculate( pers, data[:params] )
+     rc = calculate( person, data[:params] )
      return rc[:netincome]
 end
 
