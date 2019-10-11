@@ -44,12 +44,12 @@ function makeaugmented(
     r = 0
     for row in iter
         if ( ismissing( row[weightcol])) || ( ismissing( row[incomecol])) ||
-            ( deletenegatives && row[incomecol].value < 0.0 )
+            ( deletenegatives && row[incomecol] < 0.0 )
             ;
         else
             r += 1
-            aug[r,WEIGHT] = Float64(row[weightcol].value)
-            aug[r,INCOME] = Float64(row[incomecol].value)
+            aug[r,WEIGHT] = Float64(row[weightcol])
+            aug[r,INCOME] = Float64(row[incomecol])
             aug[r,WEIGHTED_INCOME] = aug[r,WEIGHT]*aug[r,INCOME]
         end # not missing or negative
     end
