@@ -2,7 +2,7 @@
 Various Standard Tax calculations. Very incomplete.
 "
 
-const RateBands = AbstractArray{<:Real}
+const RateBands = AbstractArray{<:Number}
 
 const IncomesDict = Dict{Any,Real}
 
@@ -88,7 +88,7 @@ Tax due on `taxable` income, given rates and bands
 """
 function calctaxdue(
       ;
-   taxable :: Real,
+   taxable :: Number,
    rates   :: RateBands,
    bands   :: RateBands ) :: TaxResult
    due = 0.0
