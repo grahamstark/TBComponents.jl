@@ -150,8 +150,8 @@ const DEFAULT_PARAMS = Parameters(
 
 const ZERO_PARAMS = Parameters(
    it_allow = 0.0,
-   it_rate = [0.0],
-   it_band = [99999999999999999999.99],
+   it_rate = [0.0,0.0],
+   it_band = [99999999999999999999.99,99999999999999999999.99],
    benefit1 = 0.0,
    benefit2 = 0.0,
    ben2_min_hours = 0.0,
