@@ -7,6 +7,7 @@ using Printf
 using IterableTables
 using IteratorInterfaceExtensions
 using TableTraits
+using Parameters
 
 # inequality stuff
 export OutputDict, OutputDictArray

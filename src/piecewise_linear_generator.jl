@@ -31,13 +31,13 @@ const MIN_INCOME = 0.0;
 
 const ROUND_OUTPUT = false;
 
-struct BCSettings
-    mingross :: Float64
-    maxgross :: Float64
-    increment :: Float64
-    tolerance :: Float64
-    round_output :: Bool
-    maxdepth :: Integer
+@with_kw struct BCSettings
+    mingross :: Float64 = 0.0
+    maxgross :: Float64 = MAX_INCOME
+    increment :: Float64 = INCREMENT
+    tolerance :: Float64 = TOLERANCE
+    round_output :: Bool = true
+    maxdepth :: Integer  = MAX_DEPTH
 end
 
 const DEFAULT_SETTINGS = BCSettings( MIN_INCOME, MAX_INCOME, INCREMENT, TOLERANCE, true, MAX_DEPTH )
