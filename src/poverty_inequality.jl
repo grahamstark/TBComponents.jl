@@ -48,8 +48,8 @@ function makeaugmented(
             ;
         else
             r += 1
-            aug[r,WEIGHT] = row[weightcol]
-            aug[r,INCOME] = row[incomecol]
+            aug[r,WEIGHT] = row[weightcol].value ## this is the datavalue thing; see: 
+            aug[r,INCOME] = row[incomecol].value
             aug[r,WEIGHTED_INCOME] = aug[r,WEIGHT]*aug[r,INCOME]
         end # not missing or negative
     end
