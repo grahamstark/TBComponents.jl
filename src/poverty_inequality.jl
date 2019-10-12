@@ -48,8 +48,8 @@ function makeaugmented(
             ;
         else
             r += 1
-            aug[r,WEIGHT] = Float64(row[weightcol])
-            aug[r,INCOME] = Float64(row[incomecol])
+            aug[r,WEIGHT] = row[weightcol]
+            aug[r,INCOME] = row[incomecol]
             aug[r,WEIGHTED_INCOME] = aug[r,WEIGHT]*aug[r,INCOME]
         end # not missing or negative
     end
