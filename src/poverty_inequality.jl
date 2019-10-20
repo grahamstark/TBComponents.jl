@@ -373,6 +373,8 @@ function binify(
     return binifyinternal( data, numbins )
 end
 
+## FIXME this can go horribly wrong with small unbalanced numbers of rows -
+# try pop=[22,1,1,1,1,1,1,1,1,1 inc==[1,2,2,2,2,2,2,2,2,2]
 function binifyinternal(
     data      :: Array{<:Real, 2 },
     numbins   :: Integer ) :: AbstractArray{<:Real, 2}
