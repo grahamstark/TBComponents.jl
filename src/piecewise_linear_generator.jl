@@ -1,5 +1,9 @@
 #
 #
+
+using Parameters
+
+
 """
 A piecewise_linear_generator. Used for generating budget constraints used in
 conventional microeconomics. See Stark and Duncan 1992 in the biblio.
