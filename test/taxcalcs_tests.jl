@@ -21,4 +21,14 @@ using Test
     @test tr.due ≈ 100.0
 
 
+    # tests of length of bands
+    tr = calctaxdue(taxable=10.0,rates=[0.12,0.21], bands=[12.0,99999999999999])
+    @test tr.due ≈ 1.2
+
+    tr = calctaxdue(taxable=10.0,rates=[0.12,0.21], bands=[12.0])
+    @test tr.due ≈ 1.2
+
+    tr = calctaxdue(taxable=10.0,rates=[0.12], bands=zeros(0))
+    @test tr.due ≈ 1.2
+
 end # testset
