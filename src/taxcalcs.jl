@@ -91,14 +91,22 @@ function calctaxdue(
    taxable :: Number,
    rates   :: RateBands,
    bands   :: RateBands ) :: TaxResult
+   nbands = length(bands)[1]
+   nrates = length(rates)[1]
+   @assert abs(nrates - nbands) <= 1 # allow
    due = 0.0
    mr  = 0.0
+   maxv = typemax( typeof( bands[1] ))
    remaining = taxable
    i = 0
    while remaining > 0.0
       i += 1
       if i > 1
-         gap = bands[i]-bands[i-1]
+         if i < nbands
+            gap = bands[i]-bands[i-1]
+         else
+            gap = maxv
+         end
       else
          gap = bands[1]
       end
