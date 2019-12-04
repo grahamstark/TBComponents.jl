@@ -85,6 +85,7 @@ end
 
 """
 Tax due on `taxable` income, given rates and bands
+rates can be one more than bands, in which case the last band is assumed infinite
 """
 function calctaxdue(
       ;
