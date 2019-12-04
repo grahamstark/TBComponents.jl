@@ -85,7 +85,8 @@ end
 
 """
 Tax due on `taxable` income, given rates and bands
-rates can be one more than bands, in which case the last band is assumed infinite
+rates can be one more than bands, in which case the last band is assumed infinite.
+Rates should be (e.g.) 0.12 for 12%.
 """
 function calctaxdue(
       ;
