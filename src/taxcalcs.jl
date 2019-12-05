@@ -96,7 +96,7 @@ function calctaxdue(
    nbands = length(bands)[1]
    nrates = length(rates)[1]
 
-   @assert (nrates >= 1) && (abs(nrates - nbands) <= 1 ) # allow bands to be 1 less & just fill in the top if we need it
+   @assert (nrates >= 1) && ((nrates - nbands) in 0:1 ) # allow bands to be 1 less & just fill in the top if we need it
    due = 0.0
    mr  = 0.0
    remaining = taxable
