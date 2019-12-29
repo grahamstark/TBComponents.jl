@@ -165,9 +165,18 @@ function calc_indir_components_per_unit(
 end
 
 """
-Given total expenditure, an average selling price (£20 per bottle of whisky), and vat (% of inputs, inc. other taxes),
-advalorem (e.g. £10 per bottle), and specific (% of final selling price), calculate indirect taxes due, on assumption of unit price elasticity
-(e.g. constant spending). Selling price should have same units as advalorem.
+Given:
+
+* total expenditure;
+* an average selling price (£20 per bottle of whisky, say),
+* vat (proportion of inputs, inc. other taxes - 0.2 for 20%, say),
+* advalorem (proportion of final selling price); and
+* specific (e.g. £10 per bottle).
+
+Calculate indirect taxes due, on assumption of unit price elasticity
+(e.g. constant spending).
+
+Selling price should have same units as advalorem.
 """
 function calc_indirect(
    ;
