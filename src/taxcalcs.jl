@@ -124,14 +124,15 @@ function calctaxdue(
    TaxResult( due, i )
 end
 
-#
-# Factor cost (tax exclusive cost) given VAT, per unit tax and ad valorem tax).
-#
-# @param selling_price per unit in some currency
-# @param advalorem - tax as % of final selling price as 0.2 for 20%, for instance
-# @param vat tax as % of input costs (including advalorem and specific duties) 0.175 for 17.5% e.g.
-# @param
-#
+"""
+Factor cost (tax exclusive cost) given VAT, per unit tax and ad valorem tax).
+
+@param selling_price per unit in some currency
+@param vat tax as proportion of input costs (including advalorem and specific duties) 0.175 for 17.5% e.g.
+@param advalorem - tax as proportion of final selling price as 0.2 for 20%, for instance
+@param specific - amount per (e.g.) bottle, packet, etc. in same units as selling price.
+
+"""
 function calc_factor_cost(
    ;
    selling_price :: Real,
@@ -146,6 +147,12 @@ function calc_factor_cost(
    return ( p * ( 1.0 - a - ( v * a ))/( 1.0 + v ) ) - s;
 end
 
+"""
+@param selling_price per unit in some currency
+@param vat tax as proportion of input costs (including advalorem and specific duties) 0.175 for 17.5% e.g.
+@param advalorem - tax as proportion of final selling price as 0.2 for 20%, for instance
+@param specific - amount per (e.g.) bottle, packet, etc. in same units as selling price.
+"""
 function calc_indir_components_per_unit(
    ;
    selling_price :: Real,
