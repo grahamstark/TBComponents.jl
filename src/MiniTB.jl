@@ -3,7 +3,7 @@ module MiniTB
 using TBComponents
 #
 # A toy tax-benefit system with outlines of the components
-# a Float64 model would need: models of people (and households)
+# a real model would need: models of people (and households)
 # a parameter system, a holder for results, and some calculations
 # using those things.
 # Used in test building budget constraints.
