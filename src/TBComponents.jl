@@ -21,7 +21,7 @@ export doreweighting, dochisquarereweighting
 
 export WEEKS_PER_YEAR, weeklyise, annualise
 export TaxResult, RateBands, IncomesDict
-export calctaxdue, calc_indirect, IndirResult
+export calctaxdue, calc_indirect, IndirResult,*,times
 
 # budget constraint stuff
 export Point2DG, Point2D, BudgetConstraint, BCSettings, DEFAULT_SETTINGS
