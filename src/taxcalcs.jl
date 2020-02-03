@@ -112,13 +112,14 @@ function calctaxdue(
    while remaining > 0.0
       i += 1
       if i > 1
-         if i < nbands
+         if i < nrates
             gap = bands[i]-bands[i-1]
          else
             gap = maxv
          end
       end
       t = min( remaining, gap )
+      # println( "got gap as $gap remaining $remaining")
       due += t*rates[i]
       remaining -= gap
    end
