@@ -85,26 +85,26 @@ function stepped_tax_calculation(
 end
 
 """
-Tax due on `taxable` income, given rates and bands
-rates can be one more than bands, in which case the last band is assumed infinite.
+Tax due on `taxable` income, given rates and thresholds
+rates can be one more than thresholds, in which case the last band is assumed infinite.
 Rates should be (e.g.) 0.12 for 12%.
 """
 function calctaxdue(
       ;
-   taxable :: Number,
-   rates   :: RateBands,
-   bands   :: RateBands ) :: TaxResult
+   taxable    :: Number,
+   rates      :: RateBands,
+   thresholds :: RateBands ) :: TaxResult
    nbands = length(bands)[1]
    nrates = length(rates)[1]
 
-   @assert (nrates >= 1) && ((nrates - nbands) in 0:1 ) # allow bands to be 1 less & just fill in the top if we need it
+   @assert (nrates >= 1) && ((nrates - nthresholds) in 0:1 ) # allow thresholds to be 1 less & just fill in the top if we need it
    due = 0.0
    mr  = 0.0
    remaining = taxable
    i = 0
-   if nbands > 0
-      maxv = typemax( typeof( bands[1] ))
-      gap = bands[1]
+   if nthresholds > 0
+      maxv = typemax( typeof( thresholds[1] ))
+      gap = thresholds[1]
    else
       maxv = typemax( typeof( taxable ))
       gap = maxv
@@ -113,7 +113,7 @@ function calctaxdue(
       i += 1
       if i > 1
          if i < nrates
-            gap = bands[i]-bands[i-1]
+            gap = thresholds[i]-thresholds[i-1]
          else
             gap = maxv
          end
@@ -209,21 +209,43 @@ function calc_indirect(
    )
 end
 
+function thresholds_to_bands( thresh :: RateBands ) :: RateBands
+   n = size( thresh )[1]
+   bands = RateBands(undef,n)
+   bands[1] = thresh[1]
+   for i in 2:n
+      bands[i]=thresh[i]-thresh[i-1]
+   end
+   bands
+end
+
+function bands_to_thresholds( bands :: RateBands ) :: RateBands
+   n = size( bands )[1]
+   thresholds = RateBands(undef,n)
+   thresholds[1] = bands[1]
+   for i in 2:n
+      thresholds[i]=thresholds[i-1]+bands[i]
+   end
+   thresholds;
+end
+
+
 """
 A little thing that comes up in UK income tax where tax on different sources
 is applied progressively, with possibly different rates and bands for each source.
 
 If rates are
     0.1,0.2,0.4
-and bands:
+and thresholds are:
     100,200
 then
     delete_bands_up_to( rates=rates, bands=bands, 101 )
 gives
     rates = 0.2,0.4 bands = 99,200
 """
-function delete_bands_up_to( ; rates :: RateBands, bands :: RateBands, upto :: Real )
+function delete_thresholds_up_to( ; rates :: RateBands, thresholds :: RateBands, upto :: Real )
   total = 0.0
+  bands = thresholds_to_bands( thresholds )
   last_total = 0.0
   firstband = 0.0
   num_bands = size( bands )[1]
@@ -248,5 +270,6 @@ function delete_bands_up_to( ; rates :: RateBands, bands :: RateBands, upto :: R
     rates = rates[end:end]
     bands :: RateBands = [ Inf ]
   end
-  rates, bands
+
+  rates, bands_to_thresholds(bands)
 end

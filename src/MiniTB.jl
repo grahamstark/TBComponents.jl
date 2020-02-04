@@ -167,9 +167,9 @@ const Results = Dict{Symbol,Any}
 function calculatetax(pers::Person, params::Parameters)::Float64
    taxable = max(0.0, pers.wage - params.it_allow)
    tc::TaxResult = calctaxdue(
-      taxable = taxable,
-      rates = params.it_rate,
-      bands = params.it_band,
+      taxable    = taxable,
+      rates      = params.it_rate,
+      thresholds = params.it_band,
    )
    return tc.due
 end
