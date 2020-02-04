@@ -244,7 +244,7 @@ gives
     rates = 0.2,0.4 bands = 99
 """
 function delete_thresholds_up_to( ; rates :: RateBands, thresholds :: RateBands, upto :: Real )::Tuple
-   firstthresh = 0.0
+   threshdel = 0.0
    deletethresh = -1
    num_thresh = size( thresholds )[1]
    num_rates = size( rates )[1]
@@ -254,19 +254,19 @@ function delete_thresholds_up_to( ; rates :: RateBands, thresholds :: RateBands,
    end
    for i in 1:num_thresh
       if upto < thresholds[i]
-         firstthresh = thresholds[i]-upto
-         println( "i=$i upto $upto $(thresholds[i])")
+         threshdel = (i>1) ? upto - thresholds[i-1] : upto
+         # println( "i=$i upto $upto $(thresholds[i])")
          deletethresh = i
          break
       end #
    end # 1:n
-   println(" deletethresh=$deletethresh " )
+   # println(" deletethresh=$deletethresh " )
    if deletethresh == 0 # delete none but set 1st
-      thresholds[1] = firstthresh
+      thresholds[1] = threshdel
    elseif deletethresh > 0 # delete some
       rates = rates[deletethresh:end]
       thresholds = thresholds[deletethresh:end]
-      thresholds[1] = firstthresh
+      thresholds .-= threshdel
    elseif deletethresh == -1 # we never find one - top rate only and inf thresh
       rates = rates[end:end]
       thresholds :: RateBands = [ Inf ]
