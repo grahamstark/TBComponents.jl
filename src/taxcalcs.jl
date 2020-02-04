@@ -94,7 +94,7 @@ function calctaxdue(
    taxable    :: Number,
    rates      :: RateBands,
    thresholds :: RateBands ) :: TaxResult
-   nbands = length(bands)[1]
+   nthresh = length(thresholds)[1]
    nrates = length(rates)[1]
 
    @assert (nrates >= 1) && ((nrates - nthresholds) in 0:1 ) # allow thresholds to be 1 less & just fill in the top if we need it
