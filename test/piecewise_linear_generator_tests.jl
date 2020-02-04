@@ -45,7 +45,7 @@ function getnet( data :: Dict, gross :: Float64 ) :: Float64
 end
 
 
-function makebc( person :: Person, params :: Parameters ) :: BudgetConstraint
+function makebc( person :: Person, params :: TBParameters ) :: BudgetConstraint
     data = Dict(
         :person=>person,
         :params=>params )

@@ -1,6 +1,7 @@
 module MiniTB
 
 using TBComponents
+using Parameters
 #
 # A toy tax-benefit system with outlines of the components
 # a real model would need: models of people (and households)
@@ -11,7 +12,7 @@ using TBComponents
 # and copying strucs.
 #
 
-export calculate, DEFAULT_PERSON, modifiedcopy, Parameters, Person, getnet
+export calculate, DEFAULT_PERSON, modifiedcopy, TBParameters, Person, getnet
 export modifiedcopy, DEFAULT_PARAMS, ZERO_PARAMS
 export Gender, Male, Female, DEFAULT_WAGE, DEFAULT_HOURS
 export NetType, NetIncome, TotalTaxes, BenefitsOnly
@@ -62,10 +63,10 @@ function modifiedcopy(
 end
 
 
-mutable struct Parameters
+mutable struct TBParameters
    it_allow::Float64
-   it_rate::Array{Float64}
-   it_band::Array{Float64}
+   it_rate::RateBands
+   it_band::RateBands
 
    benefit1::Float64
    benefit2::Float64
@@ -74,8 +75,8 @@ mutable struct Parameters
    ben2_u_limit::Float64
    basic_income::Float64
 
-   # attempt a constructor with named parameters
-   function Parameters(
+   # attempt a constructor with named TBParameters
+   function TBParameters(
       ;
       it_allow::Float64,
       it_rate::Array{Float64},
@@ -107,7 +108,7 @@ end
 # e.g newpars = modifiedcopy( DEFAULT_PARAMS, it_allow=3_000 )
 #
 function modifiedcopy(
-   copyFrom::Parameters;
+   copyFrom::TBParameters;
    it_allow::NullableFloat = missing,
    it_rate::NullableArray = missing,
    it_band::NullableArray = missing,
@@ -119,10 +120,10 @@ function modifiedcopy(
    ben2_u_limit::NullableFloat = missing,
    basic_income::NullableFloat = missing,
 
-)::Parameters
+)::TBParameters
 
    x = it_allow !== missing ? it_allow : copyFrom.it_allow
-   Parameters(
+   TBParameters(
       it_allow = it_allow !== missing ? it_allow : copyFrom.it_allow,
       it_rate = it_rate !== missing ? it_rate : copyFrom.it_rate,
       it_band = it_band !== missing ? it_band : copyFrom.it_band,
@@ -136,7 +137,7 @@ function modifiedcopy(
    )
 end
 
-const DEFAULT_PARAMS = Parameters(
+const DEFAULT_PARAMS = TBParameters(
    it_allow = weeklyise(12_500),
    it_rate = [0.20, 0.4],
    it_band = [weeklyise(50_000), 9999999999999999999.99],
@@ -148,7 +149,7 @@ const DEFAULT_PARAMS = Parameters(
    basic_income = 0.0
 )
 
-const ZERO_PARAMS = Parameters(
+const ZERO_PARAMS = TBParameters(
    it_allow = 0.0,
    it_rate = [0.0,0.0],
    it_band = [weeklyise(50_000),99999999999999999999.99],
@@ -164,7 +165,7 @@ const Results = Dict{Symbol,Any}
 
 ## need to include taxcalcs higher up
 
-function calculatetax(pers::Person, params::Parameters)::Float64
+function calculatetax(pers::Person, params::TBParameters)::Float64
    taxable = max(0.0, pers.wage - params.it_allow)
    tc::TaxResult = calctaxdue(
       taxable    = taxable,
@@ -174,12 +175,12 @@ function calculatetax(pers::Person, params::Parameters)::Float64
    return tc.due
 end
 
-function calculatebenefit1(pers::Person, params::Parameters)::Float64
+function calculatebenefit1(pers::Person, params::TBParameters)::Float64
    ben = params.benefit1 - pers.wage
    return max(0.0, ben )
 end
 
-function calculatebenefit2(pers::Person, params::Parameters)::Float64
+function calculatebenefit2(pers::Person, params::TBParameters)::Float64
    b = pers.hours >= params.ben2_min_hours ? params.benefit2 : 0.0
    if pers.wage > params.ben2_u_limit
       b = max(0.0, b - (params.ben2_taper * (pers.wage - params.ben2_u_limit)))
@@ -189,7 +190,7 @@ end
 
 INCR = 0.001
 
-function calculate_internal(pers::Person, params::Parameters)::Results
+function calculate_internal(pers::Person, params::TBParameters)::Results
    res = Results()
    res[:tax] = calculatetax(pers, params)
    res[:benefit1] = calculatebenefit1(pers, params)
@@ -200,7 +201,7 @@ function calculate_internal(pers::Person, params::Parameters)::Results
    return res
 end
 
-function calculate( pers::Person, params::Parameters)::Results
+function calculate( pers::Person, params::TBParameters)::Results
    res1 = calculate_internal( pers, params )
    pers.wage += INCR
    res2 = calculate_internal( pers, params )
