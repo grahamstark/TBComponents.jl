@@ -2,9 +2,9 @@
 Various Standard Tax calculations. Very incomplete.
 "
 
-const RateBands = Array{Real}
+const RateBands = Array{<:Real}
 
-const IncomesDict = Dict{Any,Real}
+const IncomesDict = Dict{Any,Number}
 
 const WEEKS_PER_YEAR = 365.25/7.0
 
@@ -23,7 +23,7 @@ end
    of eligible expenses
    FIXME I don't really understand why Dict{T,Number} works here but Dict{Any,Number} doesn't
 """
-function times( m1::Dict{T,Real}, m2::Dict{T,Real})::Real where T
+function times( m1::Dict{T,Number}, m2::Dict{T,Number})::Real where T
    m = 0.0
    ikey = intersect( keys(m1), keys(m2))
    for k in ikey
@@ -34,7 +34,7 @@ end
 
 import Base.*
 
-function *(m1::Dict{T,Real}, m2::Dict{T,Real}) :: Real where T
+function *(m1::Dict{T,Number}, m2::Dict{T,Number}) :: Real where T
     times(m1, m2)
 end
 
@@ -241,35 +241,35 @@ and thresholds are:
 then
     delete_bands_up_to( rates=rates, bands=bands, 101 )
 gives
-    rates = 0.2,0.4 bands = 99,200
+    rates = 0.2,0.4 bands = 99
 """
-function delete_thresholds_up_to( ; rates :: RateBands, thresholds :: RateBands, upto :: Real )
-  total = 0.0
-  bands = thresholds_to_bands( thresholds )
-  last_total = 0.0
-  firstband = 0.0
-  num_bands = size( bands )[1]
-  deleteband = -1
-  n = size( bands )[1]
-  for i in 1:n
-    total += bands[i]
-    if total > upto
-      deleteband = i
-      firstband = upto - last_total
-      break
-    elseif i == n
-      deleteband = -1
-    end
-    last_total = total
-  end # 1:n
-  if deleteband > 0
-    rates = rates[deleteband:end]
-    bands = bands[deleteband:end]
-    bands[1] -= firstband
-  elseif deleteband == -1
-    rates = rates[end:end]
-    bands :: RateBands = [ Inf ]
-  end
-
-  rates, bands_to_thresholds(bands)
+function delete_thresholds_up_to( ; rates :: RateBands, thresholds :: RateBands, upto :: Real )::Tuple
+   firstthresh = 0.0
+   deletethresh = -1
+   num_thresh = size( thresholds )[1]
+   num_rates = size( rates )[1]
+   @assert num_rates - num_thresh in [0,1]
+   if num_rates > num_thresh
+      thresholds = vcat( thresholds, [Inf])
+   end
+   for i in 1:num_thresh
+      if upto < thresholds[i]
+         firstthresh = thresholds[i]-upto
+         println( "i=$i upto $upto $(thresholds[i])")
+         deletethresh = i
+         break
+      end #
+   end # 1:n
+   println(" deletethresh=$deletethresh " )
+   if deletethresh == 0 # delete none but set 1st
+      thresholds[1] = firstthresh
+   elseif deletethresh > 0 # delete some
+      rates = rates[deletethresh:end]
+      thresholds = thresholds[deletethresh:end]
+      thresholds[1] = firstthresh
+   elseif deletethresh == -1 # we never find one - top rate only and inf thresh
+      rates = rates[end:end]
+      thresholds :: RateBands = [ Inf ]
+   end
+   rates, thresholds
 end
