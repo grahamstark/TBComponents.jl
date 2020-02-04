@@ -19,7 +19,7 @@ export doreweighting, dochisquarereweighting
 
 # general tax routines
 
-export WEEKS_PER_YEAR, weeklyise, annualise, delete_bands_up_to
+export WEEKS_PER_YEAR, weeklyise, annualise, delete_thresholds_up_to
 export TaxResult, RateBands, IncomesDict
 export calctaxdue, calc_indirect, IndirResult,*,times
 
