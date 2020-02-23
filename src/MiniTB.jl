@@ -17,6 +17,7 @@ export modifiedcopy, DEFAULT_PARAMS, ZERO_PARAMS
 export Gender, Male, Female, DEFAULT_WAGE, DEFAULT_HOURS
 export NetType, NetIncome, TotalTaxes, BenefitsOnly
 export calculatetax, calculatebenefit1, calculatebenefit2, calculate_internal
+export equal
 
 @enum NetType NetIncome TotalTaxes BenefitsOnly
 @enum Gender Male Female
@@ -58,7 +59,7 @@ function modifiedcopy(
       wage !== missing ? wage : copyFrom.wage,
       hours !== missing ? hours : copyFrom.hours,
       age !== missing ? age : copyFrom.age,
-      copyFrom.sex,
+      copyFrom.sex
    )
 end
 
@@ -160,6 +161,22 @@ const ZERO_PARAMS = TBParameters(
    ben2_u_limit = 0.0,
    basic_income = 0.0
 )
+
+# import Base.==
+
+function equal( l :: TBParameters, r :: TBParameters ) :: Bool
+   (l.it_allow == r.it_allow) &&
+   (l.it_rate == r.it_rate) &&
+   (l.it_band == r.it_band) &&
+   (l.benefit1 == r.benefit1) &&
+   (l.benefit2 == r.benefit2) &&
+   (l.ben2_min_hours == r.ben2_min_hours) &&
+   (l.ben2_taper == r.ben2_taper) &&
+   (l.ben2_u_limit == r.ben2_u_limit) &&
+   (l.basic_income == r.basic_income)
+end
+
+# const == = equal
 
 const Results = Dict{Symbol,Any}
 
