@@ -17,7 +17,7 @@ export modifiedcopy, DEFAULT_PARAMS, ZERO_PARAMS
 export Gender, Male, Female, DEFAULT_WAGE, DEFAULT_HOURS
 export NetType, NetIncome, TotalTaxes, BenefitsOnly
 export calculatetax, calculatebenefit1, calculatebenefit2, calculate_internal
-export equal
+export equal,==
 
 @enum NetType NetIncome TotalTaxes BenefitsOnly
 @enum Gender Male Female
@@ -80,8 +80,8 @@ mutable struct TBParameters
    function TBParameters(
       ;
       it_allow::Float64,
-      it_rate::Array{Float64},
-      it_band::Array{Float64},
+      it_rate::RateBands,
+      it_band::RateBands,
 
       benefit1::Float64,
       benefit2::Float64,
@@ -176,7 +176,12 @@ function equal( l :: TBParameters, r :: TBParameters ) :: Bool
    (l.basic_income == r.basic_income)
 end
 
-# const == = equal
+
+import Base.==
+
+function ==( l::TBParameters, r::TBParameters)::Bool
+   equal( l, r )
+end
 
 const Results = Dict{Symbol,Any}
 

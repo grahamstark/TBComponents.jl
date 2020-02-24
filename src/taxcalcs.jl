@@ -2,7 +2,7 @@
 Various Standard Tax calculations. Very incomplete.
 "
 
-const RateBands = Array{<:Real}
+const RateBands = AbstractArray{<:Real}
 
 const IncomesDict = Dict{Any,Number}
 
