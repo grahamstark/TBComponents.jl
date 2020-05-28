@@ -1,5 +1,6 @@
 "
 Various Standard Tax calculations. Very incomplete.
+
 "
 
 const RateBands = AbstractArray{<:Real}
